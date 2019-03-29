@@ -19,7 +19,7 @@
                     ,"notes":null
                     ,"type":"UserViewResponse"
                     ,"nickname":"getUserViews"
-                    ,"order":75
+                    ,"order":82
                     ,"produces":
                     ["application/json"
                     ]
@@ -139,7 +139,7 @@
                     ,"notes":null
                     ,"type":"UsersInfo"
                     ,"nickname":"getUsers"
-                    ,"order":76
+                    ,"order":83
                     ,"produces":
                     ["application/json"
                     ]
@@ -177,7 +177,7 @@
                         }
                         ,{
                             "name":"pageSize"
-                            ,"description":"Number of intended items in the response page."
+                            ,"description":"Number of intended items in the response page. If not provided, it is decided by the application settings."
                             ,"required":false
                             ,"type":"integer"
                             ,"paramType":"query"
@@ -231,7 +231,7 @@
                     ,"notes":null
                     ,"type":"DetailedUserInfo"
                     ,"nickname":"getUserDetail"
-                    ,"order":79
+                    ,"order":86
                     ,"produces":
                     ["application/json"
                     ]
@@ -312,7 +312,7 @@
                     ,"notes":null
                     ,"type":"UserGroupsInfo"
                     ,"nickname":"getGroupsOfUser"
-                    ,"order":81
+                    ,"order":88
                     ,"produces":
                     ["application/json"
                     ]
@@ -393,7 +393,7 @@
                     ,"notes":null
                     ,"type":"void"
                     ,"nickname":"modifyUser"
-                    ,"order":90
+                    ,"order":97
                     ,"produces":
                     ["application/json"
                     ]
@@ -485,7 +485,7 @@
                     ,"notes":null
                     ,"type":"void"
                     ,"nickname":"updateGroupsOfUser"
-                    ,"order":91
+                    ,"order":98
                     ,"produces":
                     ["application/json"
                     ]
@@ -573,7 +573,7 @@
                     ,"notes":null
                     ,"type":"UserStatusUpdateResponse"
                     ,"nickname":"modifyUserState"
-                    ,"order":93
+                    ,"order":100
                     ,"produces":
                     ["application/json"
                     ]
@@ -843,7 +843,7 @@
             {
                 "accountType":
                 {
-                    "required":false
+                    "required":true
                     ,"description":"Type of account to which the user belongs (null if no account)"
                     ,"type":"string"
                     ,"enum":["FREE","PRO","TEAM","TEAM_TRIAL","ENTERPRISE","ENTERPRISE_TRIAL","GLOBAL","GLOBAL_TRIAL"]
@@ -862,7 +862,7 @@
                 }
                 ,"firstName":
                 {
-                    "required":false
+                    "required":true
                     ,"description":"The first name of the user"
                     ,"type":"string"
                 }
@@ -874,7 +874,7 @@
                 }
                 ,"initials":
                 {
-                    "required":false
+                    "required":true
                     ,"description":"The initials of the user"
                     ,"type":"string"
                 }
@@ -886,13 +886,13 @@
                 }
                 ,"lastName":
                 {
-                    "required":false
+                    "required":true
                     ,"description":"The last name of the user"
                     ,"type":"string"
                 }
                 ,"locale":
                 {
-                    "required":false
+                    "required":true
                     ,"description":"The UI locale of the user"
                     ,"type":"string"
                 }

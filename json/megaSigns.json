@@ -19,7 +19,7 @@
                     ,"notes":"This is a primary endpoint which is used to create a new megaSign. A megaSign can be created using transientDocument, libraryDocument or a URL. You can create a megaSign in <b>IN_PROCESS<\/b> - Create a megaSign in this state to immediately send it. You can use the PUT/megaSigns/{megaSignId}/state endpoint to transition the state of megaSign. An allowed transition would follow the following sequence: IN_PROCESS -> CANCELLED."
                     ,"type":"MegaSignCreationResponse"
                     ,"nickname":"createMegaSign"
-                    ,"order":167
+                    ,"order":180
                     ,"produces":
                     ["application/json"
                     ]
@@ -207,7 +207,7 @@
                     ,"notes":null
                     ,"type":"MegaSignViewResponse"
                     ,"nickname":"getMegaSignView"
-                    ,"order":168
+                    ,"order":181
                     ,"produces":
                     ["application/json"
                     ]
@@ -323,7 +323,7 @@
                     ,"notes":null
                     ,"type":"MegaSigns"
                     ,"nickname":"getMegaSigns"
-                    ,"order":170
+                    ,"order":183
                     ,"produces":
                     ["application/json"
                     ]
@@ -368,7 +368,7 @@
                         }
                         ,{
                             "name":"pageSize"
-                            ,"description":"Number of intended items in the response page."
+                            ,"description":"Number of intended items in the response page. If not provided, it is decided by the application settings."
                             ,"required":false
                             ,"type":"integer"
                             ,"paramType":"query"
@@ -434,7 +434,7 @@
                     ,"notes":null
                     ,"type":"MegaSignCreationInfo"
                     ,"nickname":"getMegaSignInfo"
-                    ,"order":171
+                    ,"order":184
                     ,"produces":
                     ["application/json"
                     ]
@@ -525,7 +525,7 @@
                     ,"notes":null
                     ,"type":"MegaSignChildAgreements"
                     ,"nickname":"getMegaSignChildAgreements"
-                    ,"order":172
+                    ,"order":185
                     ,"produces":
                     ["application/json"
                     ]
@@ -577,7 +577,7 @@
                         }
                         ,{
                             "name":"pageSize"
-                            ,"description":"Number of intended items in the response page."
+                            ,"description":"Number of intended items in the response page. If not provided, it is decided by the application settings."
                             ,"required":false
                             ,"type":"integer"
                             ,"paramType":"query"
@@ -648,7 +648,7 @@
                     ,"type":"string"
                     ,"format":"byte"
                     ,"nickname":"getChildAgreementsInfoFile"
-                    ,"order":173
+                    ,"order":186
                     ,"produces":
                     ["text/csv"
                     ]
@@ -743,7 +743,7 @@
                     ,"type":"string"
                     ,"format":"byte"
                     ,"nickname":"getMegaSignCombinedDocument"
-                    ,"order":174
+                    ,"order":187
                     ,"produces":
                     ["application/pdf","application/pdf;encoding=base64"
                     ]
@@ -853,7 +853,7 @@
                     ,"notes":null
                     ,"type":"MegasignEventList"
                     ,"nickname":"getEvents"
-                    ,"order":175
+                    ,"order":188
                     ,"produces":
                     ["application/json"
                     ]
@@ -937,7 +937,7 @@
                     ,"type":"string"
                     ,"format":"byte"
                     ,"nickname":"getMegaSignFormData"
-                    ,"order":176
+                    ,"order":189
                     ,"produces":
                     ["text/csv"
                     ]
@@ -1041,7 +1041,7 @@
                     ,"notes":"This endpoint can be used by creator of the MegaSign to transition between the states of megaSign. An allowed transition would follow the following sequence :  IN_PROCESS->CANCELLED."
                     ,"type":"void"
                     ,"nickname":"updateMegaSignState"
-                    ,"order":178
+                    ,"order":191
                     ,"produces":
                     ["application/json"
                     ]
@@ -1200,7 +1200,8 @@
                 {
                     "required":false
                     ,"description":"Time after which Agreement expires and needs to be signed before it. Format should be yyyy-MM-dd'T'HH:mm:ssZ. For example, e.g 2016-02-25T18:46:19Z represents UTC time. Should not be provided in offline agreement creation."
-                    ,"type":"date"
+                    ,"type":"string"
+                    ,"format":"date"
                 }
                 ,"externalId":
                 {
@@ -1225,7 +1226,7 @@
                 ,"firstReminderDelay":
                 {
                     "required":false
-                    ,"description":"Integer which specifies the delay in hours before sending the first reminder.<br>This is an optional field. The minimum value allowed is 1 hour and the maximum value can\u2019t be more than the difference of agreement creation and expiry time of the agreement in hours.<br>If this is not specified but the reminder frequency is specified, then the first reminder will be sent based on frequency.<br>i.e. if the reminder is created with frequency specified as daily, the firstReminderDelay will be 24 hours"
+                    ,"description":"Integer which specifies the delay in hours before sending the first reminder.<br>This is an optional field. The minimum value allowed is 1 hour and the maximum value can\u2019t be more than the difference of agreement creation and expiry time of the agreement in hours.<br>If this is not specified but the reminder frequency is specified, then the first reminder will be sent based on frequency.<br>i.e. if the reminder is created with frequency specified as daily, the firstReminderDelay will be 24 hours. Cannot be updated in a PUT"
                     ,"type":"integer"
                 }
                 ,"id":
@@ -1267,7 +1268,7 @@
                     "required":false
                     ,"description":"Optional parameter that sets how often you want to send reminders to the participants. If it is not specified, the default frequency set for the account will be used"
                     ,"type":"string"
-                    ,"enum":["DAILY_UNTIL_SIGNED","WEEKLY_UNTIL_SIGNED"]
+                    ,"enum":["DAILY_UNTIL_SIGNED","WEEKDAILY_UNTIL_SIGNED","EVERY_OTHER_DAY_UNTIL_SIGNED","EVERY_THIRD_DAY_UNTIL_SIGNED","EVERY_FIFTH_DAY_UNTIL_SIGNED","WEEKLY_UNTIL_SIGNED"]
                 }
                 ,"securityOption":
                 {
@@ -1301,7 +1302,7 @@
                 }
                 ,"status":
                 {
-                    "required":true
+                    "required":false
                     ,"description":"Status of the Megasign"
                     ,"type":"string"
                     ,"enum":["AUTHORING","IN_PROCESS","CANCELLED","COMPLETED","EXPIRED","PREFILL"]
@@ -1392,13 +1393,7 @@
             "id":"FileInfo"
             ,"properties":
             {
-                "label":
-                {
-                    "required":false
-                    ,"description":"The unique label value of a file info element. In case of custom workflow this will map a file to corresponding file element in workflow definition. This must be specified in case of custom workflow agreement creation request "
-                    ,"type":"string"
-                }
-                ,"libraryDocumentId":
+                "libraryDocumentId":
                 {
                     "required":false
                     ,"description":"ID for an existing Library document that will be added to the agreement"
@@ -1623,6 +1618,14 @@
                     "required":true
                     ,"description":"True if this view is the current view"
                     ,"type":"boolean"
+                }
+                ,"name":
+                {
+                    "required":true
+                    ,"description":"Name of the requested mega sign view"
+                    ,"showInSampleRequest":true
+                    ,"type":"string"
+                    ,"enum":["AUTHORING","DOCUMENT","MANAGE","POST_CREATE","PREFILL","ALL"]
                 }
                 ,"url":
                 {
@@ -1977,7 +1980,7 @@
             {
                 "megaSignCancellationInfo":
                 {
-                    "required":false
+                    "required":true
                     ,"description":"Cancellation information for the agreement. Mandatory while cancelling a megaSign"
                     ,"type":"AgreementCancellationInfo"
                     ,"items":
@@ -2007,7 +2010,7 @@
                 }
                 ,"notifyOthers":
                 {
-                    "required":false
+                    "required":true
                     ,"description":"Whether or not you would like the recipients to be notified that the transaction has been cancelled. The default value is false"
                     ,"type":"boolean"
                 }

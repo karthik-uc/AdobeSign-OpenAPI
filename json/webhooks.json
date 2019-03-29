@@ -16,10 +16,10 @@
                 {
                     "httpMethod":"POST"
                     ,"summary":"Creates a webhook."
-                    ,"notes":null
+                    ,"notes":"This is a primary endpoint which is used to create a new webhook. A webhook can only be created in ACTIVE state. Currently, webhooks are supported at four scopes - Account, Group, User and Resource. <br/> <br/> Before creating a webhook successfully at any of these scopes, Adobe Sign <a href='https://www.adobe.io/apis/documentcloud/sign/docs.html#!adobeio/adobeio-documentation/master/sign/webhooks.md#verificationofintentofthewebhookurl'>verifies<\/a> that the webhook URL that is provided in the registration request really intends to receive notifications and is a valid URL. <br/>There is a defined mechanism for this validation where Adobe Sign makes an HTTPS GET request to the webhook URL. This request has a custom HTTP header X-AdobeSign-ClientId. The value of this header is the client ID of the application that is requesting to create the webhook. To register a webhook successfully, the webhook URL must respond to this verification request with an HTTPS 2XX response code, and also it must send back the same client ID value in one of the following two ways:<ol><li>In a custom response header, X-AdobeSign-ClientId. This is the same header which was passed in the request, and can be echoed back in the response.<\/li><li> In the JSON response body of the response with the key of xAdobeSignClientId and its value being the same client ID that was sent in the request. <\/li><\/ol><p>On successful registration,  Adobe Sign sends a success response (any HTTPS 2XX code) to your client app with the unique webhook identifier and a Location header, which contains the URL of the webhook resource created in Adobe Sign.<br/> To learn more, please refer <a href='https://www.adobe.io/apis/documentcloud/sign/docs.html#!adobeio/adobeio-documentation/master/sign/webhooks.md'>Webhooks in Adobe Sign Guide<\/a>.<\/p>"
                     ,"type":"WebhookCreationResponse"
                     ,"nickname":"createWebhook"
-                    ,"order":140
+                    ,"order":153
                     ,"produces":
                     ["application/json"
                     ]
@@ -167,7 +167,7 @@
                     ,"notes":null
                     ,"type":"UserWebhooks"
                     ,"nickname":"getWebhooks"
-                    ,"order":142
+                    ,"order":155
                     ,"produces":
                     ["application/json"
                     ]
@@ -220,11 +220,11 @@
                         }
                         ,{
                             "name":"resourceType"
-                            ,"description":"The type of resource on which webhook was created. The possible values are AGREEMENT, WIDGET and MEGASIGN."
+                            ,"description":"The type of resource on which webhook was created. The possible values are AGREEMENT, WIDGET, MEGASIGN and LIBRARY_DOCUMENT."
                             ,"required":false
                             ,"type":"string"
                             ,"paramType":"query"
-                            ,"enum":["AGREEMENT","WIDGET","MEGASIGN"]
+                            ,"enum":["AGREEMENT","WIDGET","MEGASIGN","LIBRARY_DOCUMENT"]
                         }
                         ,{
                             "name":"cursor"
@@ -235,7 +235,7 @@
                         }
                         ,{
                             "name":"pageSize"
-                            ,"description":"Number of intended items in the response page."
+                            ,"description":"Number of intended items in the response page. If not provided, it is decided by the application settings."
                             ,"required":false
                             ,"type":"integer"
                             ,"paramType":"query"
@@ -309,7 +309,7 @@
                     ,"notes":null
                     ,"type":"WebhookInfo"
                     ,"nickname":"getWebhookInfo"
-                    ,"order":143
+                    ,"order":156
                     ,"produces":
                     ["application/json"
                     ]
@@ -416,7 +416,7 @@
                     ,"notes":null
                     ,"type":"void"
                     ,"nickname":"updateWebhook"
-                    ,"order":144
+                    ,"order":157
                     ,"produces":
                     ["application/json"
                     ]
@@ -582,7 +582,7 @@
                     ,"notes":null
                     ,"type":"void"
                     ,"nickname":"updateWebhookState"
-                    ,"order":145
+                    ,"order":158
                     ,"produces":
                     ["application/json"
                     ]
@@ -724,7 +724,7 @@
                     ,"notes":null
                     ,"type":"void"
                     ,"nickname":"deleteWebhook"
-                    ,"order":146
+                    ,"order":159
                     ,"produces":
                     ["application/json"
                     ]
@@ -854,15 +854,15 @@
                 ,"resourceId":
                 {
                     "required":false
-                    ,"description":"Id of the resource type for which you want to create webhook. Provide agreementId if webhook needs to be created for an agreement. Similarly, widgetId if webhook needs to be created for a widget and megaSignId if webhook needs to be created for a megaSign. Need to specify only if scope is 'RESOURCE'. Can't be modified in PUT request"
+                    ,"description":"Id of the resource type for which you want to create webhook. Provide agreementId if webhook needs to be created for an agreement. Similarly, widgetId if webhook needs to be created for a widget, megaSignId if webhook needs to be created for a megaSign and libraryDocumentId if webhook needs to be created for a library document. Need to specify only if scope is 'RESOURCE'. Can't be modified in PUT request"
                     ,"type":"string"
                 }
                 ,"resourceType":
                 {
                     "required":false
-                    ,"description":"The resource for which you want to create webhook. Need to specify only if scope is 'RESOURCE'. Can't be modified in PUT request. The possible values are AGREEMENT, WIDGET and MEGASIGN."
+                    ,"description":"The resource for which you want to create webhook. Need to specify only if scope is 'RESOURCE'. Can't be modified in PUT request. The possible values are AGREEMENT, WIDGET,  MEGASIGN AND LIBRARY_DOCUMENT"
                     ,"type":"string"
-                    ,"enum":["AGREEMENT","WIDGET","MEGASIGN"]
+                    ,"enum":["AGREEMENT","WIDGET","MEGASIGN","LIBRARY_DOCUMENT"]
                 }
                 ,"scope":
                 {
@@ -898,12 +898,12 @@
                 ,"webhookSubscriptionEvents":
                 {
                     "required":true
-                    ,"description":"Determines events for which the webhook is triggered. The possible values are <br> AGREEMENT_CREATED : When an agreement is created <br>,\nAGREEMENT_ACTION_DELEGATED : When an agreement is delegated <br>,\nAGREEMENT_RECALLED : When an agreement is recalled <br>,\nAGREEMENT_REJECTED : When an agreement is rejected <br>,\nAGREEMENT_EXPIRED : When an agreement expires <br>,\nAGREEMENT_ACTION_COMPLETED : When an agreement action is completed <br>,\nAGREEMENT_WORKFLOW_COMPLETED : When an agreement workflow is completed <br>,\nAGREEMENT_EMAIL_VIEWED : When an agreement's email is viewed <br>,\nAGREEMENT_MODIFIED : When an agreement is modified <br>,\nAGREEMENT_SHARED : When an agreement is shared <br>,\nAGREEMENT_VAULTED : When an agreement is vaulted <br>,\nAGREEMENT_ACTION_REQUESTED : When an agreement action is requested <br>,\nAGREEMENT_ACTION_REPLACED_SIGNER : When signer is replaced for an agreement <br>,\nAGREEMENT_AUTO_CANCELLED_CONVERSION_PROBLEM : When an agreement is auto-cancelled due to conversion problem <br>,\nAGREEMENT_DOCUMENTS_DELETED : When an agreement documents are deleted <br>,\nAGREEMENT_EMAIL_BOUNCED : When an agreement email gets bounced <br>,\nAGREEMENT_KBA_AUTHENTICATED : When an agreement KBA is authenticated <br>,\nAGREEMENT_OFFLINE_SYNC : When an agreement is synced offline <br>,\nAGREEMENT_USER_ACK_AGREEMENT_MODIFIED : User Acknowledgement when an agreement is modified <br>,\nAGREEMENT_UPLOADED_BY_SENDER : When an agreement is uploaded by sender <br>,\nAGREEMENT_WEB_IDENTITY_AUTHENTICATED : When an agreement web identity is authenticated <br>,\nAGREEMENT_ALL : All the supported agreement events for Webhooks <br>,\nMEGASIGN_CREATED : When a megaSign is created <br>,\nMEGASIGN_RECALLED : When a megaSign is recalled <br>,\nMEGASIGN_SHARED : When a megaSign is shared <br>,\nMEGASIGN_ALL : All the supported megaSign events for Webhooks <br>,\nWIDGET_CREATED : When a widget is created <br>,\nWIDGET_MODIFIED : When a widget is modified <br>,\nWIDGET_SHARED : When a widget is shared <br>,\nWIDGET_ENABLED : When a widget is enabled <br>,\nWIDGET_DISABLED : When a widget is disabled <br>,\nWIDGET_AUTO_CANCELLED_CONVERSION_PROBLEM : When a widget is auto-cancelled due to conversion problem <br>,\nWIDGET_ALL : All the supported widget events for Webhooks"
+                    ,"description":"Determines events for which the webhook is triggered. The possible values are <br> AGREEMENT_CREATED : When an agreement is created <br>,\nAGREEMENT_ACTION_DELEGATED : When an agreement is delegated <br>,\nAGREEMENT_RECALLED : When an agreement is recalled <br>,\nAGREEMENT_REJECTED : When an agreement is rejected <br>,\nAGREEMENT_EXPIRED : When an agreement expires <br>,\nAGREEMENT_ACTION_COMPLETED : When an agreement action is completed <br>,\nAGREEMENT_WORKFLOW_COMPLETED : When an agreement workflow is completed <br>,\nAGREEMENT_EMAIL_VIEWED : When an agreement's email is viewed <br>,\nAGREEMENT_MODIFIED : When an agreement is modified <br>,\nAGREEMENT_SHARED : When an agreement is shared <br>,\nAGREEMENT_VAULTED : When an agreement is vaulted <br>,\nAGREEMENT_ACTION_REQUESTED : When an agreement action is requested <br>,\nAGREEMENT_ACTION_REPLACED_SIGNER : When signer is replaced for an agreement <br>,\nAGREEMENT_AUTO_CANCELLED_CONVERSION_PROBLEM : When an agreement is auto-cancelled due to conversion problem <br>,\nAGREEMENT_DOCUMENTS_DELETED : When an agreement documents are deleted <br>,\nAGREEMENT_EMAIL_BOUNCED : When an agreement email gets bounced <br>,\nAGREEMENT_KBA_AUTHENTICATED : When an agreement KBA is authenticated <br>,\nAGREEMENT_OFFLINE_SYNC : When an agreement is synced offline <br>,\nAGREEMENT_USER_ACK_AGREEMENT_MODIFIED : User Acknowledgement when an agreement is modified <br>,\nAGREEMENT_UPLOADED_BY_SENDER : When an agreement is uploaded by sender <br>,\nAGREEMENT_WEB_IDENTITY_AUTHENTICATED : When an agreement web identity is authenticated <br>,\nAGREEMENT_ALL : All the supported agreement events for Webhooks <br>,\nMEGASIGN_CREATED : When a megaSign is created <br>,\nMEGASIGN_RECALLED : When a megaSign is recalled <br>,\nMEGASIGN_SHARED : When a megaSign is shared <br>,\nMEGASIGN_ALL : All the supported megaSign events for Webhooks <br>,\nWIDGET_CREATED : When a widget is created <br>,\nWIDGET_MODIFIED : When a widget is modified <br>,\nWIDGET_SHARED : When a widget is shared <br>,\nWIDGET_ENABLED : When a widget is enabled <br>,\nWIDGET_DISABLED : When a widget is disabled <br>,\nWIDGET_AUTO_CANCELLED_CONVERSION_PROBLEM : When a widget is auto-cancelled due to conversion problem <br>,\nWIDGET_ALL : All the supported widget events for Webhooks <br>,\nLIBRARY_DOCUMENT_CREATED : When a library document  is created <br>,\nLIBRARY_DOCUMENT_AUTO_CANCELLED_CONVERSION_PROBLEM : When a library document is auto-cancelled due to conversion problem <br>,\nLIBRARY_DOCUMENT_MODIFIED : When a library document is modified <br>,\nLIBRARY_DOCUMENT_ALL : All the supported library document  events for Webhooks"
                     ,"type":"array"
                     ,"items":
                     {
                         "type":"string"
-                        ,"enum":["AGREEMENT_CREATED","AGREEMENT_ACTION_DELEGATED","AGREEMENT_RECALLED","AGREEMENT_REJECTED","AGREEMENT_EXPIRED","AGREEMENT_ACTION_COMPLETED","AGREEMENT_WORKFLOW_COMPLETED","AGREEMENT_EMAIL_VIEWED","AGREEMENT_MODIFIED","AGREEMENT_SHARED","AGREEMENT_VAULTED","AGREEMENT_ACTION_REQUESTED","AGREEMENT_ACTION_REPLACED_SIGNER","AGREEMENT_AUTO_CANCELLED_CONVERSION_PROBLEM","AGREEMENT_DOCUMENTS_DELETED","AGREEMENT_EMAIL_BOUNCED","AGREEMENT_KBA_AUTHENTICATED","AGREEMENT_OFFLINE_SYNC","AGREEMENT_USER_ACK_AGREEMENT_MODIFIED","AGREEMENT_UPLOADED_BY_SENDER","AGREEMENT_WEB_IDENTITY_AUTHENTICATED","AGREEMENT_ALL","MEGASIGN_CREATED","MEGASIGN_RECALLED","MEGASIGN_SHARED","MEGASIGN_ALL","WIDGET_CREATED","WIDGET_MODIFIED","WIDGET_SHARED","WIDGET_ENABLED","WIDGET_DISABLED","WIDGET_AUTO_CANCELLED_CONVERSION_PROBLEM","WIDGET_ALL"]
+                        ,"enum":["AGREEMENT_CREATED","AGREEMENT_ACTION_DELEGATED","AGREEMENT_RECALLED","AGREEMENT_REJECTED","AGREEMENT_EXPIRED","AGREEMENT_ACTION_COMPLETED","AGREEMENT_WORKFLOW_COMPLETED","AGREEMENT_EMAIL_VIEWED","AGREEMENT_MODIFIED","AGREEMENT_SHARED","AGREEMENT_VAULTED","AGREEMENT_ACTION_REQUESTED","AGREEMENT_ACTION_REPLACED_SIGNER","AGREEMENT_AUTO_CANCELLED_CONVERSION_PROBLEM","AGREEMENT_DOCUMENTS_DELETED","AGREEMENT_EMAIL_BOUNCED","AGREEMENT_KBA_AUTHENTICATED","AGREEMENT_OFFLINE_SYNC","AGREEMENT_USER_ACK_AGREEMENT_MODIFIED","AGREEMENT_UPLOADED_BY_SENDER","AGREEMENT_WEB_IDENTITY_AUTHENTICATED","AGREEMENT_ALL","MEGASIGN_CREATED","MEGASIGN_RECALLED","MEGASIGN_SHARED","MEGASIGN_ALL","WIDGET_CREATED","WIDGET_MODIFIED","WIDGET_SHARED","WIDGET_ENABLED","WIDGET_DISABLED","WIDGET_AUTO_CANCELLED_CONVERSION_PROBLEM","WIDGET_ALL","LIBRARY_DOCUMENT_CREATED","LIBRARY_DOCUMENT_AUTO_CANCELLED_CONVERSION_PROBLEM","LIBRARY_DOCUMENT_MODIFIED","LIBRARY_DOCUMENT_ALL"]
                     }
                 }
                 ,"webhookUrlInfo":
@@ -931,6 +931,16 @@
                     ,"items":
                     {
                         "$ref":"WebhookAgreementEvents"
+                    }
+                }
+                ,"webhookLibraryDocumentEvents":
+                {
+                    "required":false
+                    ,"description":"Conditional parameters for webhook library document events"
+                    ,"type":"WebhookLibraryDocumentEvents"
+                    ,"items":
+                    {
+                        "$ref":"WebhookLibraryDocumentEvents"
                     }
                 }
                 ,"webhookMegaSignEvents":
@@ -982,6 +992,25 @@
                 {
                     "required":false
                     ,"description":"Determines whether documents will be returned in webhook response payload. If set to true, signed document will be returned in base 64 encoded format in JSON when signing is complete"
+                    ,"type":"boolean"
+                }
+            }
+        }
+        ,"WebhookLibraryDocumentEvents":
+        {
+            "id":"WebhookLibraryDocumentEvents"
+            ,"properties":
+            {
+                "includeDetailedInfo":
+                {
+                    "required":false
+                    ,"description":"Determines whether agreement detailed info will be returned in the response payload"
+                    ,"type":"boolean"
+                }
+                ,"includeDocumentsInfo":
+                {
+                    "required":false
+                    ,"description":"Determines whether document info will be returned in the response payload"
                     ,"type":"boolean"
                 }
             }
@@ -1130,15 +1159,15 @@
                 ,"resourceId":
                 {
                     "required":false
-                    ,"description":"Id of the resource type for which you want to create webhook. Provide agreementId if webhook needs to be created for an agreement. Similarly, widgetId if webhook needs to be created for a widget and megaSignId if webhook needs to be created for a megaSign. Need to specify only if scope is 'RESOURCE'. Can't be modified in PUT request"
+                    ,"description":"Id of the resource type for which you want to create webhook. Provide agreementId if webhook needs to be created for an agreement. Similarly, widgetId if webhook needs to be created for a widget, megaSignId if webhook needs to be created for a megaSign and libraryDocumentId if webhook needs to be created for a library document. Need to specify only if scope is 'RESOURCE'. Can't be modified in PUT request"
                     ,"type":"string"
                 }
                 ,"resourceType":
                 {
                     "required":false
-                    ,"description":"The resource for which you want to create webhook. Need to specify only if scope is 'RESOURCE'. Can't be modified in PUT request. The possible values are AGREEMENT, WIDGET and MEGASIGN."
+                    ,"description":"The resource for which you want to create webhook. Need to specify only if scope is 'RESOURCE'. Can't be modified in PUT request. The possible values are AGREEMENT, WIDGET,  MEGASIGN AND LIBRARY_DOCUMENT"
                     ,"type":"string"
-                    ,"enum":["AGREEMENT","WIDGET","MEGASIGN"]
+                    ,"enum":["AGREEMENT","WIDGET","MEGASIGN","LIBRARY_DOCUMENT"]
                 }
                 ,"scope":
                 {
@@ -1157,12 +1186,12 @@
                 ,"webhookSubscriptionEvents":
                 {
                     "required":true
-                    ,"description":"Determines events for which the webhook is triggered. The possible values are <br> AGREEMENT_CREATED : When an agreement is created <br>,\nAGREEMENT_ACTION_DELEGATED : When an agreement is delegated <br>,\nAGREEMENT_RECALLED : When an agreement is recalled <br>,\nAGREEMENT_REJECTED : When an agreement is rejected <br>,\nAGREEMENT_EXPIRED : When an agreement expires <br>,\nAGREEMENT_ACTION_COMPLETED : When an agreement action is completed <br>,\nAGREEMENT_WORKFLOW_COMPLETED : When an agreement workflow is completed <br>,\nAGREEMENT_EMAIL_VIEWED : When an agreement's email is viewed <br>,\nAGREEMENT_MODIFIED : When an agreement is modified <br>,\nAGREEMENT_SHARED : When an agreement is shared <br>,\nAGREEMENT_VAULTED : When an agreement is vaulted <br>,\nAGREEMENT_ACTION_REQUESTED : When an agreement action is requested <br>,\nAGREEMENT_ACTION_REPLACED_SIGNER : When signer is replaced for an agreement <br>,\nAGREEMENT_AUTO_CANCELLED_CONVERSION_PROBLEM : When an agreement is auto-cancelled due to conversion problem <br>,\nAGREEMENT_DOCUMENTS_DELETED : When an agreement documents are deleted <br>,\nAGREEMENT_EMAIL_BOUNCED : When an agreement email gets bounced <br>,\nAGREEMENT_KBA_AUTHENTICATED : When an agreement KBA is authenticated <br>,\nAGREEMENT_OFFLINE_SYNC : When an agreement is synced offline <br>,\nAGREEMENT_USER_ACK_AGREEMENT_MODIFIED : User Acknowledgement when an agreement is modified <br>,\nAGREEMENT_UPLOADED_BY_SENDER : When an agreement is uploaded by sender <br>,\nAGREEMENT_WEB_IDENTITY_AUTHENTICATED : When an agreement web identity is authenticated <br>,\nAGREEMENT_ALL : All the supported agreement events for Webhooks <br>,\nMEGASIGN_CREATED : When a megaSign is created <br>,\nMEGASIGN_RECALLED : When a megaSign is recalled <br>,\nMEGASIGN_SHARED : When a megaSign is shared <br>,\nMEGASIGN_ALL : All the supported megaSign events for Webhooks <br>,\nWIDGET_CREATED : When a widget is created <br>,\nWIDGET_MODIFIED : When a widget is modified <br>,\nWIDGET_SHARED : When a widget is shared <br>,\nWIDGET_ENABLED : When a widget is enabled <br>,\nWIDGET_DISABLED : When a widget is disabled <br>,\nWIDGET_AUTO_CANCELLED_CONVERSION_PROBLEM : When a widget is auto-cancelled due to conversion problem <br>,\nWIDGET_ALL : All the supported widget events for Webhooks"
+                    ,"description":"Determines events for which the webhook is triggered. The possible values are <br> AGREEMENT_CREATED : When an agreement is created <br>,\nAGREEMENT_ACTION_DELEGATED : When an agreement is delegated <br>,\nAGREEMENT_RECALLED : When an agreement is recalled <br>,\nAGREEMENT_REJECTED : When an agreement is rejected <br>,\nAGREEMENT_EXPIRED : When an agreement expires <br>,\nAGREEMENT_ACTION_COMPLETED : When an agreement action is completed <br>,\nAGREEMENT_WORKFLOW_COMPLETED : When an agreement workflow is completed <br>,\nAGREEMENT_EMAIL_VIEWED : When an agreement's email is viewed <br>,\nAGREEMENT_MODIFIED : When an agreement is modified <br>,\nAGREEMENT_SHARED : When an agreement is shared <br>,\nAGREEMENT_VAULTED : When an agreement is vaulted <br>,\nAGREEMENT_ACTION_REQUESTED : When an agreement action is requested <br>,\nAGREEMENT_ACTION_REPLACED_SIGNER : When signer is replaced for an agreement <br>,\nAGREEMENT_AUTO_CANCELLED_CONVERSION_PROBLEM : When an agreement is auto-cancelled due to conversion problem <br>,\nAGREEMENT_DOCUMENTS_DELETED : When an agreement documents are deleted <br>,\nAGREEMENT_EMAIL_BOUNCED : When an agreement email gets bounced <br>,\nAGREEMENT_KBA_AUTHENTICATED : When an agreement KBA is authenticated <br>,\nAGREEMENT_OFFLINE_SYNC : When an agreement is synced offline <br>,\nAGREEMENT_USER_ACK_AGREEMENT_MODIFIED : User Acknowledgement when an agreement is modified <br>,\nAGREEMENT_UPLOADED_BY_SENDER : When an agreement is uploaded by sender <br>,\nAGREEMENT_WEB_IDENTITY_AUTHENTICATED : When an agreement web identity is authenticated <br>,\nAGREEMENT_ALL : All the supported agreement events for Webhooks <br>,\nMEGASIGN_CREATED : When a megaSign is created <br>,\nMEGASIGN_RECALLED : When a megaSign is recalled <br>,\nMEGASIGN_SHARED : When a megaSign is shared <br>,\nMEGASIGN_ALL : All the supported megaSign events for Webhooks <br>,\nWIDGET_CREATED : When a widget is created <br>,\nWIDGET_MODIFIED : When a widget is modified <br>,\nWIDGET_SHARED : When a widget is shared <br>,\nWIDGET_ENABLED : When a widget is enabled <br>,\nWIDGET_DISABLED : When a widget is disabled <br>,\nWIDGET_AUTO_CANCELLED_CONVERSION_PROBLEM : When a widget is auto-cancelled due to conversion problem <br>,\nWIDGET_ALL : All the supported widget events for Webhooks <br>,\nLIBRARY_DOCUMENT_CREATED : When a library document  is created <br>,\nLIBRARY_DOCUMENT_AUTO_CANCELLED_CONVERSION_PROBLEM : When a library document is auto-cancelled due to conversion problem <br>,\nLIBRARY_DOCUMENT_MODIFIED : When a library document is modified <br>,\nLIBRARY_DOCUMENT_ALL : All the supported library document  events for Webhooks"
                     ,"type":"array"
                     ,"items":
                     {
                         "type":"string"
-                        ,"enum":["AGREEMENT_CREATED","AGREEMENT_ACTION_DELEGATED","AGREEMENT_RECALLED","AGREEMENT_REJECTED","AGREEMENT_EXPIRED","AGREEMENT_ACTION_COMPLETED","AGREEMENT_WORKFLOW_COMPLETED","AGREEMENT_EMAIL_VIEWED","AGREEMENT_MODIFIED","AGREEMENT_SHARED","AGREEMENT_VAULTED","AGREEMENT_ACTION_REQUESTED","AGREEMENT_ACTION_REPLACED_SIGNER","AGREEMENT_AUTO_CANCELLED_CONVERSION_PROBLEM","AGREEMENT_DOCUMENTS_DELETED","AGREEMENT_EMAIL_BOUNCED","AGREEMENT_KBA_AUTHENTICATED","AGREEMENT_OFFLINE_SYNC","AGREEMENT_USER_ACK_AGREEMENT_MODIFIED","AGREEMENT_UPLOADED_BY_SENDER","AGREEMENT_WEB_IDENTITY_AUTHENTICATED","AGREEMENT_ALL","MEGASIGN_CREATED","MEGASIGN_RECALLED","MEGASIGN_SHARED","MEGASIGN_ALL","WIDGET_CREATED","WIDGET_MODIFIED","WIDGET_SHARED","WIDGET_ENABLED","WIDGET_DISABLED","WIDGET_AUTO_CANCELLED_CONVERSION_PROBLEM","WIDGET_ALL"]
+                        ,"enum":["AGREEMENT_CREATED","AGREEMENT_ACTION_DELEGATED","AGREEMENT_RECALLED","AGREEMENT_REJECTED","AGREEMENT_EXPIRED","AGREEMENT_ACTION_COMPLETED","AGREEMENT_WORKFLOW_COMPLETED","AGREEMENT_EMAIL_VIEWED","AGREEMENT_MODIFIED","AGREEMENT_SHARED","AGREEMENT_VAULTED","AGREEMENT_ACTION_REQUESTED","AGREEMENT_ACTION_REPLACED_SIGNER","AGREEMENT_AUTO_CANCELLED_CONVERSION_PROBLEM","AGREEMENT_DOCUMENTS_DELETED","AGREEMENT_EMAIL_BOUNCED","AGREEMENT_KBA_AUTHENTICATED","AGREEMENT_OFFLINE_SYNC","AGREEMENT_USER_ACK_AGREEMENT_MODIFIED","AGREEMENT_UPLOADED_BY_SENDER","AGREEMENT_WEB_IDENTITY_AUTHENTICATED","AGREEMENT_ALL","MEGASIGN_CREATED","MEGASIGN_RECALLED","MEGASIGN_SHARED","MEGASIGN_ALL","WIDGET_CREATED","WIDGET_MODIFIED","WIDGET_SHARED","WIDGET_ENABLED","WIDGET_DISABLED","WIDGET_AUTO_CANCELLED_CONVERSION_PROBLEM","WIDGET_ALL","LIBRARY_DOCUMENT_CREATED","LIBRARY_DOCUMENT_AUTO_CANCELLED_CONVERSION_PROBLEM","LIBRARY_DOCUMENT_MODIFIED","LIBRARY_DOCUMENT_ALL"]
                     }
                 }
                 ,"webhookUrlInfo":

@@ -59,7 +59,7 @@
                             "name":"AgreementInfo"
                             ,"description":"Information about the agreement that you want to create."
                             ,"required":true
-                            ,"type":"AgreementInfo"
+                            ,"type":"AgreementCreationInfo"
                             ,"paramType":"body"
                         }
                     ]
@@ -239,6 +239,10 @@
                         }
                         ,{
                             "code":"403"
+                            ,"reason":"GOV_ID_LIMIT_EXCEEDED: Government ID for identity verification is exhausted. Please select another method or contact your administrator."
+                        }
+                        ,{
+                            "code":"403"
                             ,"reason":"HYBRID_ROUTING_NOT_ALLOWED: Hybrid routing is not enabled for this user."
                         }
                         ,{
@@ -341,6 +345,13 @@
                             ,"paramType":"header"
                         }
                         ,{
+                            "name":"x-on-behalf-of-user"
+                            ,"description":"The userId or email in the format <b>userid:{userId} OR email:{email}.<\/b> of the user that has shared his/her account"
+                            ,"required":false
+                            ,"type":"string"
+                            ,"paramType":"header"
+                        }
+                        ,{
                             "name":"If-Match"
                             ,"description":"The server will only update the resource if it matches the listed ETag otherwise error RESOURCE_MODIFIED(412) is returned."
                             ,"required":true
@@ -366,6 +377,10 @@
                     [
                         {
                             "code":"400"
+                            ,"reason":"INVALID_ON_BEHALF_OF_USER_HEADER: Value provided in x-on-behalf-Of-user header is in invalid format."
+                        }
+                        ,{
+                            "code":"400"
                             ,"reason":"MISSING_IF_MATCH_HEADER: If-Match header missing."
                         }
                         ,{
@@ -375,6 +390,10 @@
                         ,{
                             "code":"401"
                             ,"reason":"INVALID_ACCESS_TOKEN: Access token provided is invalid or has expired."
+                        }
+                        ,{
+                            "code":"401"
+                            ,"reason":"INVALID_ON_BEHALF_OF_USER: Invalid user ID or email provided in x-on-behalf-of-user header."
                         }
                         ,{
                             "code":"401"
@@ -636,6 +655,14 @@
                     [
                         {
                             "code":"400"
+                            ,"reason":"AGREEMENT_SHARING_MAX_SHAREES_EXCEEDED: Agreements can be shared with at most %s sharees at a time."
+                        }
+                        ,{
+                            "code":"400"
+                            ,"reason":"AGREEMENT_SHARING_MAX_SHAREE_EXCEEDED: Agreements can be shared with at most 1 sharee at a time."
+                        }
+                        ,{
+                            "code":"400"
                             ,"reason":"BAD_REQUEST: The request provided is invalid."
                         }
                         ,{
@@ -665,6 +692,10 @@
                         ,{
                             "code":"403"
                             ,"reason":"AGREEMENT_IN_DRAFT_STATE: The agreement is in draft state."
+                        }
+                        ,{
+                            "code":"403"
+                            ,"reason":"AGREEMENT_SHARING_DISABLED: Agreement sharing is not enabled for your account."
                         }
                         ,{
                             "code":"403"
@@ -737,7 +768,7 @@
                         }
                         ,{
                             "name":"ReminderInfo"
-                            ,"description":"The information about the reminder that you want to create on the participantSet of the agreement."
+                            ,"description":"The information about a reminder associated with a recipient of an agreement."
                             ,"required":true
                             ,"type":"ReminderInfo"
                             ,"paramType":"body"
@@ -748,6 +779,10 @@
                         {
                             "code":"400"
                             ,"reason":"BAD_REQUEST: The request provided is invalid."
+                        }
+                        ,{
+                            "code":"400"
+                            ,"reason":"INVALID_DATE_FORMAT: The date format provided is invalid."
                         }
                         ,{
                             "code":"400"
@@ -763,7 +798,15 @@
                         }
                         ,{
                             "code":"400"
-                            ,"reason":"INVALID_REMINDER_STATUS: Status of the reminder provided in the request is invalid. Reminder cannot be created in this state."
+                            ,"reason":"INVALID_REMINDER_RECIPIENT_PIDS: One or more of the participant ID(s) of the reminder recipients provided in the request are invalid."
+                        }
+                        ,{
+                            "code":"400"
+                            ,"reason":"INVALID_REMINDER_STATUS: Status of the reminder provided in the request is invalid. Reminder cannot be created in the CANCELED or updated to the ACTIVE state."
+                        }
+                        ,{
+                            "code":"400"
+                            ,"reason":"INVALID_START_REMINDER_FROM_WHEN_AGREEMENT_IN_AUTHORING: Reminders cannot be created when startReminderCounterFrom = REMINDER_CREATION and the agreement is waiting for authoring."
                         }
                         ,{
                             "code":"400"
@@ -803,7 +846,7 @@
                         }
                         ,{
                             "code":"404"
-                            ,"reason":"AGREEMENT_CANCELLED: The agreement is already cancelled."
+                            ,"reason":"AGREEMENT_ARCHIVED: The agreement is archived."
                         }
                         ,{
                             "code":"404"
@@ -818,8 +861,8 @@
                             ,"reason":"INVALID_AGREEMENT_ID: The Agreement ID specified is invalid."
                         }
                         ,{
-                            "code":"404"
-                            ,"reason":"INVALID_PARTICIPANT_SET_ID: The participant set ID specified is invalid."
+                            "code":"409"
+                            ,"reason":"AGREEMENT_ALREADY_CANCELLED: The agreement being modified has already been cancelled."
                         }
                         ,{
                             "code":"500"
@@ -997,14 +1040,14 @@
                         }
                         ,{
                             "name":"externalId"
-                            ,"description":"Case-sensitive ExternalID for which you would like to retrieve agreement information. ExternalId is passed in the call to the agreement creation API"
+                            ,"description":"Case-sensitive ExternalID for which you would like to retrieve agreement information. ExternalId is passed in the call to the agreement creation API."
                             ,"required":false
                             ,"type":"string"
                             ,"paramType":"query"
                         }
                         ,{
                             "name":"showHiddenAgreements"
-                            ,"description":"A query parameter to fetch all the hidden agreements along with the visible agreements."
+                            ,"description":"A query parameter to fetch all the hidden agreements along with the visible agreements. Default value is false."
                             ,"required":false
                             ,"type":"boolean"
                             ,"paramType":"query"
@@ -1018,7 +1061,7 @@
                         }
                         ,{
                             "name":"pageSize"
-                            ,"description":"Number of intended items in the response page."
+                            ,"description":"Number of intended items in the response page. If not provided, it is decided by the application settings."
                             ,"required":false
                             ,"type":"integer"
                             ,"paramType":"query"
@@ -1237,6 +1280,13 @@
                             ,"paramType":"header"
                         }
                         ,{
+                            "name":"If-None-Match"
+                            ,"description":"Pass the value of the e-tag header obtained from the previous response to the same request to get a RESOURCE_NOT_MODIFIED(304) if the resource hasn't changed."
+                            ,"required":false
+                            ,"type":"string"
+                            ,"paramType":"header"
+                        }
+                        ,{
                             "name":"agreementId"
                             ,"description":"The agreement identifier, as returned by the agreement creation API or retrieved from the API to fetch agreements."
                             ,"required":true
@@ -1368,7 +1418,7 @@
                         }
                         ,{
                             "name":"participantId"
-                            ,"description":"The participant identifier to be used to retrieve documents."
+                            ,"description":"The participant identifier to be used to retrieve documents. If not mentioned, the participation of api caller is used."
                             ,"required":false
                             ,"type":"string"
                             ,"paramType":"query"
@@ -1589,6 +1639,154 @@
             ]
         }
         ,{
+            "path":"/agreements/{agreementId}/combinedDocument/url"
+            ,"operations":
+            [
+                {
+                    "httpMethod":"GET"
+                    ,"summary":"Retrieves url of all visible pages of all the documents associated with an agreement."
+                    ,"notes":null
+                    ,"type":"DocumentUrl"
+                    ,"nickname":"getCombinedDocumentUrl"
+                    ,"order":24
+                    ,"produces":
+                    ["application/json"
+                    ]
+                    ,"authorizations":
+                    {
+                        "oauth2":
+                        [
+                            {
+                                "scope":"agreement_read"
+                            }
+                        ]
+                    }
+                    ,"parameters":
+                    [
+                        {
+                            "name":"Authorization"
+                            ,"description":"An <a href=\"#\" onclick=\"this.href=oauthDoc()\" oncontextmenu=\"this.href=oauthDoc()\" target=\"oauthDoc\">OAuth Access Token<\/a> with scopes:<ul><li style='list-style-type: square'><a href=\"#\" onclick=\"this.href=oauthDoc('agreement_read')\" oncontextmenu=\"this.href=oauthDoc('agreement_read')\" target=\"oauthDoc\">agreement_read<\/a><\/li><\/ul>in the format <b>'Bearer {accessToken}'."
+                            ,"required":true
+                            ,"type":"string"
+                            ,"paramType":"header"
+                        }
+                        ,{
+                            "name":"x-api-user"
+                            ,"description":"The userId or email of API caller using the account or group token in the format <b>userid:{userId} OR email:{email}.<\/b> If it is not specified, then the caller is inferred from the token."
+                            ,"required":false
+                            ,"type":"string"
+                            ,"paramType":"header"
+                        }
+                        ,{
+                            "name":"x-on-behalf-of-user"
+                            ,"description":"The userId or email in the format <b>userid:{userId} OR email:{email}.<\/b> of the user that has shared his/her account"
+                            ,"required":false
+                            ,"type":"string"
+                            ,"paramType":"header"
+                        }
+                        ,{
+                            "name":"agreementId"
+                            ,"description":"The agreement identifier, as returned by the agreement creation API or retrieved from the API to fetch agreements."
+                            ,"required":true
+                            ,"type":"string"
+                            ,"paramType":"path"
+                        }
+                        ,{
+                            "name":"versionId"
+                            ,"description":"The version identifier of agreement as provided by the API which retrieves information of a specific agreement. If not provided then latest version will be used."
+                            ,"required":false
+                            ,"type":"string"
+                            ,"paramType":"query"
+                        }
+                        ,{
+                            "name":"participantId"
+                            ,"description":"The participant identifier to be used to retrieve documents. If not mentioned, the participation of api caller is used."
+                            ,"required":false
+                            ,"type":"string"
+                            ,"paramType":"query"
+                        }
+                        ,{
+                            "name":"attachSupportingDocuments"
+                            ,"description":"When set to true, attach corresponding supporting documents to the signed agreement PDF. Default value of this parameter is true."
+                            ,"required":false
+                            ,"type":"boolean"
+                            ,"paramType":"query"
+                        }
+                        ,{
+                            "name":"attachAuditReport"
+                            ,"description":"When set to true, attach an audit report to the signed agreement PDF. Default value is false"
+                            ,"required":false
+                            ,"type":"boolean"
+                            ,"paramType":"query"
+                        }
+                    ]
+                    ,"errorResponses":
+                    [
+                        {
+                            "code":"400"
+                            ,"reason":"INVALID_X_API_USER_HEADER: Value provided in x-api-user header is in invalid format."
+                        }
+                        ,{
+                            "code":"401"
+                            ,"reason":"INVALID_ACCESS_TOKEN: Access token provided is invalid or has expired."
+                        }
+                        ,{
+                            "code":"401"
+                            ,"reason":"INVALID_ON_BEHALF_OF_USER: Invalid user ID or email provided in x-on-behalf-of-user header."
+                        }
+                        ,{
+                            "code":"401"
+                            ,"reason":"INVALID_USER: Invalid user ID or email provided in x-user header."
+                        }
+                        ,{
+                            "code":"401"
+                            ,"reason":"NO_AUTHORIZATION_HEADER: Authorization header not provided."
+                        }
+                        ,{
+                            "code":"403"
+                            ,"reason":"AGREEMENT_IN_DRAFT_STATE: The agreement is in draft state."
+                        }
+                        ,{
+                            "code":"403"
+                            ,"reason":"API_TERMS_NOT_ACCEPTED: Your account is locked because an administrator has not agreed to Adobe Sign's Terms of Use. Please contact your account administrator to activate your account."
+                        }
+                        ,{
+                            "code":"403"
+                            ,"reason":"PERMISSION_DENIED: The API caller does not have the permission to execute this operation."
+                        }
+                        ,{
+                            "code":"404"
+                            ,"reason":"AGREEMENT_DELETED: The agreement has been deleted."
+                        }
+                        ,{
+                            "code":"404"
+                            ,"reason":"AGREEMENT_NOT_AVAILABLE: The agreement is not yet available or will have no pages to view."
+                        }
+                        ,{
+                            "code":"404"
+                            ,"reason":"DOCUMENT_NOT_AVAILABLE: The document is not yet available or will have no pages to view."
+                        }
+                        ,{
+                            "code":"404"
+                            ,"reason":"INVALID_AGREEMENT_ID: The Agreement ID specified is invalid."
+                        }
+                        ,{
+                            "code":"404"
+                            ,"reason":"INVALID_PARTICIPANT_ID: The participant ID specified is invalid."
+                        }
+                        ,{
+                            "code":"404"
+                            ,"reason":"INVALID_VERSION_ID: The Version ID specified is invalid."
+                        }
+                        ,{
+                            "code":"500"
+                            ,"reason":"MISC_SERVER_ERROR: Some miscellaneous error has occurred."
+                        }
+                    ]
+                }
+            ]
+        }
+        ,{
             "path":"/agreements/{agreementId}/documents"
             ,"operations":
             [
@@ -1657,14 +1855,14 @@
                         }
                         ,{
                             "name":"participantId"
-                            ,"description":"The participant identifier to be used to retrieve documents."
+                            ,"description":"The participant identifier to be used to retrieve documents. If not mentioned, the participation of api caller is used."
                             ,"required":false
                             ,"type":"string"
                             ,"paramType":"query"
                         }
                         ,{
                             "name":"supportingDocumentContentFormat"
-                            ,"description":"Content format of the supported documents. It can have two possible values ORIGINAL or CONVERTED_PDF."
+                            ,"description":"Content format of the supported documents. It can have two possible values ORIGINAL or CONVERTED_PDF. Default value is CONVERTED_PDF."
                             ,"required":false
                             ,"type":"string"
                             ,"paramType":"query"
@@ -2113,7 +2311,7 @@
                         }
                         ,{
                             "name":"participantId"
-                            ,"description":"The participant identifier to be used to retrieve documents."
+                            ,"description":"The participant identifier to be used to retrieve documents. If not mentioned, the participation of api caller is used."
                             ,"required":false
                             ,"type":"string"
                             ,"paramType":"query"
@@ -2497,6 +2695,20 @@
                             ,"paramType":"header"
                         }
                         ,{
+                            "name":"x-on-behalf-of-user"
+                            ,"description":"The userId or email in the format <b>userid:{userId} OR email:{email}.<\/b> of the user that has shared his/her account"
+                            ,"required":false
+                            ,"type":"string"
+                            ,"paramType":"header"
+                        }
+                        ,{
+                            "name":"If-None-Match"
+                            ,"description":"Pass the value of the e-tag header obtained from the previous response to the same request to get a RESOURCE_NOT_MODIFIED(304) if the resource hasn't changed."
+                            ,"required":false
+                            ,"type":"string"
+                            ,"paramType":"header"
+                        }
+                        ,{
                             "name":"participantEmail"
                             ,"description":"The email address of the participant to be used to retrieve its associated form fields."
                             ,"required":false
@@ -2514,8 +2726,20 @@
                     ,"errorResponses":
                     [
                         {
+                            "code":"304"
+                            ,"reason":"RESOURCE_NOT_MODIFIED: Resource is not modified."
+                        }
+                        ,{
+                            "code":"400"
+                            ,"reason":"INVALID_ON_BEHALF_OF_USER_HEADER: Value provided in x-on-behalf-Of-user header is in invalid format."
+                        }
+                        ,{
                             "code":"401"
                             ,"reason":"INVALID_ACCESS_TOKEN: Access token provided is invalid or has expired."
+                        }
+                        ,{
+                            "code":"401"
+                            ,"reason":"INVALID_ON_BEHALF_OF_USER: Invalid user ID or email provided in x-on-behalf-of-user header."
                         }
                         ,{
                             "code":"401"
@@ -2609,6 +2833,13 @@
                             ,"paramType":"header"
                         }
                         ,{
+                            "name":"x-on-behalf-of-user"
+                            ,"description":"The userId or email in the format <b>userid:{userId} OR email:{email}.<\/b> of the user that has shared his/her account"
+                            ,"required":false
+                            ,"type":"string"
+                            ,"paramType":"header"
+                        }
+                        ,{
                             "name":"agreementId"
                             ,"description":"The agreement identifier, as returned by the agreement creation API or retrieved from the API to fetch agreements."
                             ,"required":true
@@ -2623,8 +2854,16 @@
                             ,"reason":"INVALID_JSON: An invalid JSON was specified."
                         }
                         ,{
+                            "code":"400"
+                            ,"reason":"INVALID_ON_BEHALF_OF_USER_HEADER: Value provided in x-on-behalf-Of-user header is in invalid format."
+                        }
+                        ,{
                             "code":"401"
                             ,"reason":"INVALID_ACCESS_TOKEN: Access token provided is invalid or has expired."
+                        }
+                        ,{
+                            "code":"401"
+                            ,"reason":"INVALID_ON_BEHALF_OF_USER: Invalid user ID or email provided in x-on-behalf-of-user header."
                         }
                         ,{
                             "code":"401"
@@ -2817,7 +3056,7 @@
                         }
                         ,{
                             "name":"includeNextParticipantSet"
-                            ,"description":"A query parameter to fetch next active participation members"
+                            ,"description":"A query parameter to fetch next active participation members. Default value is false."
                             ,"required":false
                             ,"type":"boolean"
                             ,"paramType":"query"
@@ -2875,10 +3114,6 @@
                         ,{
                             "code":"403"
                             ,"reason":"PERMISSION_DENIED: The API caller does not have the permission to execute this operation."
-                        }
-                        ,{
-                            "code":"404"
-                            ,"reason":"AGREEMENT_ARCHIVED: The agreement is archived."
                         }
                         ,{
                             "code":"404"
@@ -3035,6 +3270,378 @@
             ]
         }
         ,{
+            "path":"/agreements/{agreementId}/members/participantSets/{participantSetId}/participants/{participantId}/securityOptions"
+            ,"operations":
+            [
+                {
+                    "httpMethod":"GET"
+                    ,"summary":"Retrieves the security options for a particular participant."
+                    ,"notes":null
+                    ,"type":"ParticipantSecurityOption"
+                    ,"nickname":"getAgreementSecurityOptionsForParticipation"
+                    ,"order":45
+                    ,"produces":
+                    ["application/json"
+                    ]
+                    ,"authorizations":
+                    {
+                        "oauth2":
+                        [
+                            {
+                                "scope":"agreement_read"
+                            }
+                        ]
+                    }
+                    ,"parameters":
+                    [
+                        {
+                            "name":"Authorization"
+                            ,"description":"An <a href=\"#\" onclick=\"this.href=oauthDoc()\" oncontextmenu=\"this.href=oauthDoc()\" target=\"oauthDoc\">OAuth Access Token<\/a> with scopes:<ul><li style='list-style-type: square'><a href=\"#\" onclick=\"this.href=oauthDoc('agreement_read')\" oncontextmenu=\"this.href=oauthDoc('agreement_read')\" target=\"oauthDoc\">agreement_read<\/a><\/li><\/ul>in the format <b>'Bearer {accessToken}'."
+                            ,"required":true
+                            ,"type":"string"
+                            ,"paramType":"header"
+                        }
+                        ,{
+                            "name":"If-None-Match"
+                            ,"description":"Pass the value of the e-tag header obtained from the previous response to the same request to get a RESOURCE_NOT_MODIFIED(304) if the resource hasn't changed."
+                            ,"required":false
+                            ,"type":"string"
+                            ,"paramType":"header"
+                        }
+                        ,{
+                            "name":"x-api-user"
+                            ,"description":"The userId or email of API caller using the account or group token in the format <b>userid:{userId} OR email:{email}.<\/b> If it is not specified, then the caller is inferred from the token."
+                            ,"required":false
+                            ,"type":"string"
+                            ,"paramType":"header"
+                        }
+                        ,{
+                            "name":"agreementId"
+                            ,"description":"The agreement identifier, as returned by the agreement creation API or retrieved from the API to fetch agreements."
+                            ,"required":true
+                            ,"type":"string"
+                            ,"paramType":"path"
+                        }
+                        ,{
+                            "name":"participantSetId"
+                            ,"description":"The participant set identifier"
+                            ,"required":true
+                            ,"type":"string"
+                            ,"paramType":"path"
+                        }
+                        ,{
+                            "name":"participantId"
+                            ,"description":"The participant identifier"
+                            ,"required":true
+                            ,"type":"string"
+                            ,"paramType":"path"
+                        }
+                    ]
+                    ,"errorResponses":
+                    [
+                        {
+                            "code":"304"
+                            ,"reason":"RESOURCE_NOT_MODIFIED: Resource is not modified."
+                        }
+                        ,{
+                            "code":"400"
+                            ,"reason":"BAD_REQUEST: The request provided is invalid."
+                        }
+                        ,{
+                            "code":"400"
+                            ,"reason":"INVALID_X_API_USER_HEADER: Value provided in x-api-user header is in invalid format."
+                        }
+                        ,{
+                            "code":"401"
+                            ,"reason":"INVALID_ACCESS_TOKEN: Access token provided is invalid or has expired."
+                        }
+                        ,{
+                            "code":"401"
+                            ,"reason":"NO_ACCESS_TOKEN_HEADER: Access token header not provided."
+                        }
+                        ,{
+                            "code":"401"
+                            ,"reason":"NO_AUTHORIZATION_HEADER: Authorization header not provided."
+                        }
+                        ,{
+                            "code":"403"
+                            ,"reason":"AGREEMENT_IN_DRAFT_STATE: The agreement is in draft state."
+                        }
+                        ,{
+                            "code":"403"
+                            ,"reason":"API_TERMS_NOT_ACCEPTED: Your account is locked because an administrator has not agreed to Adobe Sign's Terms of Use. Please contact your account administrator to activate your account."
+                        }
+                        ,{
+                            "code":"403"
+                            ,"reason":"PERMISSION_DENIED: The API caller does not have the permission to execute this operation."
+                        }
+                        ,{
+                            "code":"404"
+                            ,"reason":"AGREEMENT_ARCHIVED: The agreement is archived."
+                        }
+                        ,{
+                            "code":"404"
+                            ,"reason":"INVALID_AGREEMENT_ID: The Agreement ID specified is invalid."
+                        }
+                        ,{
+                            "code":"404"
+                            ,"reason":"INVALID_PARTICIPANT_ID: The participant ID specified is invalid."
+                        }
+                        ,{
+                            "code":"404"
+                            ,"reason":"INVALID_PARTICIPANT_SET_ID: The participant set ID specified is invalid."
+                        }
+                        ,{
+                            "code":"500"
+                            ,"reason":"MISC_SERVER_ERROR: Some miscellaneous error has occurred."
+                        }
+                    ]
+                }
+            ]
+        }
+        ,{
+            "path":"/agreements/{agreementId}/reminders"
+            ,"operations":
+            [
+                {
+                    "httpMethod":"GET"
+                    ,"summary":"Retrieves the reminders of an agreement, identified by agreementId in the path."
+                    ,"notes":null
+                    ,"type":"RemindersResponse"
+                    ,"nickname":"getAgreementReminders"
+                    ,"order":47
+                    ,"produces":
+                    ["application/json"
+                    ]
+                    ,"authorizations":
+                    {
+                        "oauth2":
+                        [
+                            {
+                                "scope":"agreement_read"
+                            }
+                        ]
+                    }
+                    ,"parameters":
+                    [
+                        {
+                            "name":"Authorization"
+                            ,"description":"An <a href=\"#\" onclick=\"this.href=oauthDoc()\" oncontextmenu=\"this.href=oauthDoc()\" target=\"oauthDoc\">OAuth Access Token<\/a> with scopes:<ul><li style='list-style-type: square'><a href=\"#\" onclick=\"this.href=oauthDoc('agreement_read')\" oncontextmenu=\"this.href=oauthDoc('agreement_read')\" target=\"oauthDoc\">agreement_read<\/a><\/li><\/ul>in the format <b>'Bearer {accessToken}'."
+                            ,"required":true
+                            ,"type":"string"
+                            ,"paramType":"header"
+                        }
+                        ,{
+                            "name":"x-api-user"
+                            ,"description":"The userId or email of API caller using the account or group token in the format <b>userid:{userId} OR email:{email}.<\/b> If it is not specified, then the caller is inferred from the token."
+                            ,"required":false
+                            ,"type":"string"
+                            ,"paramType":"header"
+                        }
+                        ,{
+                            "name":"x-on-behalf-of-user"
+                            ,"description":"The userId or email in the format <b>userid:{userId} OR email:{email}.<\/b> of the user that has shared his/her account"
+                            ,"required":false
+                            ,"type":"string"
+                            ,"paramType":"header"
+                        }
+                        ,{
+                            "name":"agreementId"
+                            ,"description":"The agreement identifier, as returned by the agreement creation API or retrieved from the API to fetch agreements."
+                            ,"required":true
+                            ,"type":"string"
+                            ,"paramType":"path"
+                        }
+                        ,{
+                            "name":"status"
+                            ,"description":"A comma-separated list of reminder statuses of the reminders which should be returned in the response. Currently supported values are ACTIVE, CANCELLED, COMPLETE"
+                            ,"required":false
+                            ,"type":"string"
+                            ,"paramType":"query"
+                        }
+                    ]
+                    ,"errorResponses":
+                    [
+                        {
+                            "code":"400"
+                            ,"reason":"BAD_REQUEST: The request provided is invalid."
+                        }
+                        ,{
+                            "code":"400"
+                            ,"reason":"INVALID_JSON: An invalid JSON was specified."
+                        }
+                        ,{
+                            "code":"400"
+                            ,"reason":"INVALID_ON_BEHALF_OF_USER_HEADER: Value provided in x-on-behalf-Of-user header is in invalid format."
+                        }
+                        ,{
+                            "code":"400"
+                            ,"reason":"INVALID_X_API_USER_HEADER: Value provided in x-api-user header is in invalid format."
+                        }
+                        ,{
+                            "code":"401"
+                            ,"reason":"INVALID_ACCESS_TOKEN: Access token provided is invalid or has expired."
+                        }
+                        ,{
+                            "code":"401"
+                            ,"reason":"NO_ACCESS_TOKEN_HEADER: Access token header not provided."
+                        }
+                        ,{
+                            "code":"401"
+                            ,"reason":"NO_AUTHORIZATION_HEADER: Authorization header not provided."
+                        }
+                        ,{
+                            "code":"403"
+                            ,"reason":"AGREEMENT_IN_DRAFT_STATE: The agreement is in draft state."
+                        }
+                        ,{
+                            "code":"403"
+                            ,"reason":"PERMISSION_DENIED: The API caller does not have the permission to execute this operation."
+                        }
+                        ,{
+                            "code":"404"
+                            ,"reason":"INVALID_AGREEMENT_ID: The Agreement ID specified is invalid."
+                        }
+                        ,{
+                            "code":"500"
+                            ,"reason":"MISC_SERVER_ERROR: Some miscellaneous error has occurred."
+                        }
+                    ]
+                }
+            ]
+        }
+        ,{
+            "path":"/agreements/{agreementId}/reminders/{reminderId}"
+            ,"operations":
+            [
+                {
+                    "httpMethod":"GET"
+                    ,"summary":"Retrieves a specific reminder associated with an agreement"
+                    ,"notes":null
+                    ,"type":"ReminderInfo"
+                    ,"nickname":"getAgreementReminder"
+                    ,"order":48
+                    ,"produces":
+                    ["application/json"
+                    ]
+                    ,"authorizations":
+                    {
+                        "oauth2":
+                        [
+                            {
+                                "scope":"agreement_read"
+                            }
+                        ]
+                    }
+                    ,"parameters":
+                    [
+                        {
+                            "name":"Authorization"
+                            ,"description":"An <a href=\"#\" onclick=\"this.href=oauthDoc()\" oncontextmenu=\"this.href=oauthDoc()\" target=\"oauthDoc\">OAuth Access Token<\/a> with scopes:<ul><li style='list-style-type: square'><a href=\"#\" onclick=\"this.href=oauthDoc('agreement_read')\" oncontextmenu=\"this.href=oauthDoc('agreement_read')\" target=\"oauthDoc\">agreement_read<\/a><\/li><\/ul>in the format <b>'Bearer {accessToken}'."
+                            ,"required":true
+                            ,"type":"string"
+                            ,"paramType":"header"
+                        }
+                        ,{
+                            "name":"x-api-user"
+                            ,"description":"The userId or email of API caller using the account or group token in the format <b>userid:{userId} OR email:{email}.<\/b> If it is not specified, then the caller is inferred from the token."
+                            ,"required":false
+                            ,"type":"string"
+                            ,"paramType":"header"
+                        }
+                        ,{
+                            "name":"x-on-behalf-of-user"
+                            ,"description":"The userId or email in the format <b>userid:{userId} OR email:{email}.<\/b> of the user that has shared his/her account"
+                            ,"required":false
+                            ,"type":"string"
+                            ,"paramType":"header"
+                        }
+                        ,{
+                            "name":"agreementId"
+                            ,"description":"The agreement identifier, as returned by the agreement creation API or retrieved from the API to fetch agreements."
+                            ,"required":true
+                            ,"type":"string"
+                            ,"paramType":"path"
+                        }
+                        ,{
+                            "name":"reminderId"
+                            ,"description":"The reminder identifier"
+                            ,"required":true
+                            ,"type":"string"
+                            ,"paramType":"path"
+                        }
+                    ]
+                    ,"errorResponses":
+                    [
+                        {
+                            "code":"400"
+                            ,"reason":"INVALID_ON_BEHALF_OF_USER_HEADER: Value provided in x-on-behalf-Of-user header is in invalid format."
+                        }
+                        ,{
+                            "code":"400"
+                            ,"reason":"INVALID_X_API_USER_HEADER: Value provided in x-api-user header is in invalid format."
+                        }
+                        ,{
+                            "code":"401"
+                            ,"reason":"INVALID_ACCESS_TOKEN: Access token provided is invalid or has expired."
+                        }
+                        ,{
+                            "code":"401"
+                            ,"reason":"INVALID_ON_BEHALF_OF_USER: Invalid user ID or email provided in x-on-behalf-of-user header."
+                        }
+                        ,{
+                            "code":"401"
+                            ,"reason":"INVALID_USER: Invalid user ID or email provided in x-user header."
+                        }
+                        ,{
+                            "code":"401"
+                            ,"reason":"NO_AUTHORIZATION_HEADER: Authorization header not provided."
+                        }
+                        ,{
+                            "code":"403"
+                            ,"reason":"AGREEMENT_IN_DRAFT_STATE: The agreement is in draft state."
+                        }
+                        ,{
+                            "code":"403"
+                            ,"reason":"API_TERMS_NOT_ACCEPTED: Your account is locked because an administrator has not agreed to Adobe Sign's Terms of Use. Please contact your account administrator to activate your account."
+                        }
+                        ,{
+                            "code":"403"
+                            ,"reason":"PERMISSION_DENIED: The API caller does not have the permission to execute this operation."
+                        }
+                        ,{
+                            "code":"404"
+                            ,"reason":"AGREEMENT_ARCHIVED: The agreement is archived."
+                        }
+                        ,{
+                            "code":"404"
+                            ,"reason":"AGREEMENT_DELETED: The agreement has been deleted."
+                        }
+                        ,{
+                            "code":"404"
+                            ,"reason":"AGREEMENT_EXPIRED: The agreement is expired."
+                        }
+                        ,{
+                            "code":"404"
+                            ,"reason":"INVALID_AGREEMENT_ID: The Agreement ID specified is invalid."
+                        }
+                        ,{
+                            "code":"404"
+                            ,"reason":"INVALID_REMINDER_ID: The reminder ID specified is invalid."
+                        }
+                        ,{
+                            "code":"409"
+                            ,"reason":"AGREEMENT_ALREADY_CANCELLED: The agreement being modified has already been cancelled."
+                        }
+                        ,{
+                            "code":"500"
+                            ,"reason":"MISC_SERVER_ERROR: Some miscellaneous error has occurred."
+                        }
+                    ]
+                }
+            ]
+        }
+        ,{
             "path":"/agreements/{agreementId}/signingUrls"
             ,"operations":
             [
@@ -3044,7 +3651,7 @@
                     ,"notes":null
                     ,"type":"SigningUrlResponse"
                     ,"nickname":"getSigningUrl"
-                    ,"order":47
+                    ,"order":50
                     ,"produces":
                     ["application/json"
                     ]
@@ -3155,127 +3762,16 @@
             ]
         }
         ,{
-            "path":"/agreements/{agreementId}/reminders"
-            ,"operations":
-            [
-                {
-                    "httpMethod":"GET"
-                    ,"summary":"Retrieves the reminders of an agreement, identified by agreementId in the path."
-                    ,"notes":null
-                    ,"type":"RemindersResponse"
-                    ,"nickname":"getAgreementReminders"
-                    ,"order":48
-                    ,"produces":
-                    ["application/json"
-                    ]
-                    ,"authorizations":
-                    {
-                        "oauth2":
-                        [
-                            {
-                                "scope":"agreement_read"
-                            }
-                        ]
-                    }
-                    ,"parameters":
-                    [
-                        {
-                            "name":"Authorization"
-                            ,"description":"An <a href=\"#\" onclick=\"this.href=oauthDoc()\" oncontextmenu=\"this.href=oauthDoc()\" target=\"oauthDoc\">OAuth Access Token<\/a> with scopes:<ul><li style='list-style-type: square'><a href=\"#\" onclick=\"this.href=oauthDoc('agreement_read')\" oncontextmenu=\"this.href=oauthDoc('agreement_read')\" target=\"oauthDoc\">agreement_read<\/a><\/li><\/ul>in the format <b>'Bearer {accessToken}'."
-                            ,"required":true
-                            ,"type":"string"
-                            ,"paramType":"header"
-                        }
-                        ,{
-                            "name":"x-api-user"
-                            ,"description":"The userId or email of API caller using the account or group token in the format <b>userid:{userId} OR email:{email}.<\/b> If it is not specified, then the caller is inferred from the token."
-                            ,"required":false
-                            ,"type":"string"
-                            ,"paramType":"header"
-                        }
-                        ,{
-                            "name":"x-on-behalf-of-user"
-                            ,"description":"The userId or email in the format <b>userid:{userId} OR email:{email}.<\/b> of the user that has shared his/her account"
-                            ,"required":false
-                            ,"type":"string"
-                            ,"paramType":"header"
-                        }
-                        ,{
-                            "name":"agreementId"
-                            ,"description":"The agreement identifier, as returned by the agreement creation API or retrieved from the API to fetch agreements."
-                            ,"required":true
-                            ,"type":"string"
-                            ,"paramType":"path"
-                        }
-                        ,{
-                            "name":"status"
-                            ,"description":"A comma-separated list of reminder statuses of the reminders which should be returned in the response. Currently supported values are ACTIVE, CANCELED, COMPLETE"
-                            ,"required":false
-                            ,"type":"string"
-                            ,"paramType":"query"
-                        }
-                    ]
-                    ,"errorResponses":
-                    [
-                        {
-                            "code":"400"
-                            ,"reason":"BAD_REQUEST: The request provided is invalid."
-                        }
-                        ,{
-                            "code":"400"
-                            ,"reason":"INVALID_JSON: An invalid JSON was specified."
-                        }
-                        ,{
-                            "code":"400"
-                            ,"reason":"INVALID_ON_BEHALF_OF_USER_HEADER: Value provided in x-on-behalf-Of-user header is in invalid format."
-                        }
-                        ,{
-                            "code":"400"
-                            ,"reason":"INVALID_X_API_USER_HEADER: Value provided in x-api-user header is in invalid format."
-                        }
-                        ,{
-                            "code":"401"
-                            ,"reason":"INVALID_ACCESS_TOKEN: Access token provided is invalid or has expired."
-                        }
-                        ,{
-                            "code":"401"
-                            ,"reason":"NO_ACCESS_TOKEN_HEADER: Access token header not provided."
-                        }
-                        ,{
-                            "code":"401"
-                            ,"reason":"NO_AUTHORIZATION_HEADER: Authorization header not provided."
-                        }
-                        ,{
-                            "code":"403"
-                            ,"reason":"AGREEMENT_IN_DRAFT_STATE: The agreement is in draft state."
-                        }
-                        ,{
-                            "code":"403"
-                            ,"reason":"PERMISSION_DENIED: The API caller does not have the permission to execute this operation."
-                        }
-                        ,{
-                            "code":"404"
-                            ,"reason":"INVALID_AGREEMENT_ID: The Agreement ID specified is invalid."
-                        }
-                        ,{
-                            "code":"500"
-                            ,"reason":"MISC_SERVER_ERROR: Some miscellaneous error has occurred."
-                        }
-                    ]
-                }
-            ]
-        }
-        ,{
             "path":"/agreements/{agreementId}"
             ,"operations":
             [
                 {
                     "httpMethod":"PUT"
-                    ,"summary":"Updates the agreement in draft state."
+                    ,"summary":"Updates the agreement in draft state, or update the expirationTime on an existing agreement that is already out for signature."
                     ,"notes":null
                     ,"type":"void"
                     ,"nickname":"updateAgreement"
-                    ,"order":50
+                    ,"order":52
                     ,"produces":
                     ["application/json"
                     ]
@@ -3336,6 +3832,14 @@
                     ,"errorResponses":
                     [
                         {
+                            "code":"400"
+                            ,"reason":"AGREEMENT_EXPIRATION_DATE_INVALID: You must set a future date for agreement expiration."
+                        }
+                        ,{
+                            "code":"400"
+                            ,"reason":"AGREEMENT_EXPIRATION_MAX_DAYS_EXCEEDED: There is a maximum of %s days before document expiration."
+                        }
+                        ,{
                             "code":"400"
                             ,"reason":"CCINFO_LABEL_MISSING: Required label field value is missing in CcInfo ."
                         }
@@ -3413,6 +3917,10 @@
                         }
                         ,{
                             "code":"400"
+                            ,"reason":"MODIFYING_IMMUTABLE_FIELDS: Immutable fields cannot be modified ."
+                        }
+                        ,{
+                            "code":"400"
                             ,"reason":"PARTICIPATIONSET_LABEL_MISSING: Required label field value is missing in participant set."
                         }
                         ,{
@@ -3450,6 +3958,10 @@
                         ,{
                             "code":"403"
                             ,"reason":"API_TERMS_NOT_ACCEPTED: Your account is locked because an administrator has not agreed to Adobe Sign's Terms of Use. Please contact your account administrator to activate your account."
+                        }
+                        ,{
+                            "code":"403"
+                            ,"reason":"CANNOT_EDIT_AGREEMENT_EXPIRATION: You do not have permission to set the expiration date for this agreement."
                         }
                         ,{
                             "code":"403"
@@ -3501,6 +4013,10 @@
                         }
                         ,{
                             "code":"409"
+                            ,"reason":"AGREEMENT_ALREADY_CANCELLED: The agreement being modified has already been cancelled."
+                        }
+                        ,{
+                            "code":"409"
                             ,"reason":"AGREEMENT_ALREADY_DELEGATED: The agreement being modified has already been delegated to a signer."
                         }
                         ,{
@@ -3533,11 +4049,11 @@
             [
                 {
                     "httpMethod":"PUT"
-                    ,"summary":"Updates form fields of an agreement."
+                    ,"summary":"Updates form fields of an agreement.  This will replace all fields in AUTHORING mode agreements, and will replace all fields except for text tag generated fields in DRAFT mode agreements."
                     ,"notes":null
                     ,"type":"AgreementFormFields"
                     ,"nickname":"updateFormFields"
-                    ,"order":52
+                    ,"order":55
                     ,"produces":
                     ["application/json"
                     ]
@@ -3562,6 +4078,13 @@
                         ,{
                             "name":"x-api-user"
                             ,"description":"The userId or email of API caller using the account or group token in the format <b>userid:{userId} OR email:{email}.<\/b> If it is not specified, then the caller is inferred from the token."
+                            ,"required":false
+                            ,"type":"string"
+                            ,"paramType":"header"
+                        }
+                        ,{
+                            "name":"x-on-behalf-of-user"
+                            ,"description":"The userId or email in the format <b>userid:{userId} OR email:{email}.<\/b> of the user that has shared his/her account"
                             ,"required":false
                             ,"type":"string"
                             ,"paramType":"header"
@@ -3596,11 +4119,19 @@
                         }
                         ,{
                             "code":"400"
+                            ,"reason":"INVALID_ON_BEHALF_OF_USER_HEADER: Value provided in x-on-behalf-Of-user header is in invalid format."
+                        }
+                        ,{
+                            "code":"400"
                             ,"reason":"MISSING_IF_MATCH_HEADER: If-Match header missing."
                         }
                         ,{
                             "code":"401"
                             ,"reason":"INVALID_ACCESS_TOKEN: Access token provided is invalid or has expired."
+                        }
+                        ,{
+                            "code":"401"
+                            ,"reason":"INVALID_ON_BEHALF_OF_USER: Invalid user ID or email provided in x-on-behalf-of-user header."
                         }
                         ,{
                             "code":"401"
@@ -3652,7 +4183,7 @@
                     ,"notes":null
                     ,"type":"void"
                     ,"nickname":"updateAgreementMergeInfo"
-                    ,"order":53
+                    ,"order":56
                     ,"authorizations":
                     {
                         "oauth2":
@@ -3674,6 +4205,13 @@
                         ,{
                             "name":"x-api-user"
                             ,"description":"The userId or email of API caller using the account or group token in the format <b>userid:{userId} OR email:{email}.<\/b> If it is not specified, then the caller is inferred from the token."
+                            ,"required":false
+                            ,"type":"string"
+                            ,"paramType":"header"
+                        }
+                        ,{
+                            "name":"x-on-behalf-of-user"
+                            ,"description":"The userId or email in the format <b>userid:{userId} OR email:{email}.<\/b> of the user that has shared his/her account"
                             ,"required":false
                             ,"type":"string"
                             ,"paramType":"header"
@@ -3708,11 +4246,19 @@
                         }
                         ,{
                             "code":"400"
+                            ,"reason":"INVALID_ON_BEHALF_OF_USER_HEADER: Value provided in x-on-behalf-Of-user header is in invalid format."
+                        }
+                        ,{
+                            "code":"400"
                             ,"reason":"MISSING_IF_MATCH_HEADER: If-Match header missing."
                         }
                         ,{
                             "code":"401"
                             ,"reason":"INVALID_ACCESS_TOKEN: Access token provided is invalid or has expired."
+                        }
+                        ,{
+                            "code":"401"
+                            ,"reason":"INVALID_ON_BEHALF_OF_USER: Invalid user ID or email provided in x-on-behalf-of-user header."
                         }
                         ,{
                             "code":"401"
@@ -3760,7 +4306,7 @@
                     ,"notes":null
                     ,"type":"void"
                     ,"nickname":"updateAgreementVisibility"
-                    ,"order":54
+                    ,"order":57
                     ,"produces":
                     ["application/json"
                     ]
@@ -3834,6 +4380,10 @@
                             ,"reason":"MISSING_REQUIRED_PARAM: Required parameters are missing."
                         }
                         ,{
+                            "code":"400"
+                            ,"reason":"UPDATE_NOT_ALLOWED: The agreement you are trying to update is not modifiable."
+                        }
+                        ,{
                             "code":"401"
                             ,"reason":"INVALID_ACCESS_TOKEN: Access token provided is invalid or has expired."
                         }
@@ -3851,6 +4401,10 @@
                         }
                         ,{
                             "code":"403"
+                            ,"reason":"AGREEMENT_IN_DRAFT_STATE: The agreement is in draft state."
+                        }
+                        ,{
+                            "code":"403"
                             ,"reason":"PERMISSION_DENIED: The API caller does not have the permission to execute this operation."
                         }
                         ,{
@@ -3860,14 +4414,6 @@
                         ,{
                             "code":"404"
                             ,"reason":"INVALID_AGREEMENT_ID: The Agreement ID specified is invalid."
-                        }
-                        ,{
-                            "code":"404"
-                            ,"reason":"INVALID_PARTICIPANT_ID: The participant ID specified is invalid."
-                        }
-                        ,{
-                            "code":"404"
-                            ,"reason":"INVALID_PARTICIPANT_SET_ID: The participant set ID specified is invalid."
                         }
                         ,{
                             "code":"500"
@@ -3887,7 +4433,7 @@
                     ,"notes":null
                     ,"type":"void"
                     ,"nickname":"updateParticipantSet"
-                    ,"order":55
+                    ,"order":58
                     ,"produces":
                     ["application/json"
                     ]
@@ -3972,6 +4518,10 @@
                         }
                         ,{
                             "code":"400"
+                            ,"reason":"DELEGATION_TO_PREVIOUSLY_REPLACED_NOT_ALLOWED: You can't add an individual who was previously replaced."
+                        }
+                        ,{
+                            "code":"400"
                             ,"reason":"DELEGATION_TO_SELF_NOT_ALLOWED: You can't delegate a signature to yourself."
                         }
                         ,{
@@ -3980,11 +4530,23 @@
                         }
                         ,{
                             "code":"400"
+                            ,"reason":"INVALID_COUNTRY_CODE: Country code provided is invalid."
+                        }
+                        ,{
+                            "code":"400"
                             ,"reason":"INVALID_EMAIL: Email provided is invalid."
                         }
                         ,{
                             "code":"400"
                             ,"reason":"INVALID_JSON: An invalid JSON was specified."
+                        }
+                        ,{
+                            "code":"400"
+                            ,"reason":"INVALID_PASSWORD: Password provided is invalid."
+                        }
+                        ,{
+                            "code":"400"
+                            ,"reason":"INVALID_PHONE: Phone number provided is invalid."
                         }
                         ,{
                             "code":"400"
@@ -4068,7 +4630,7 @@
                     ,"notes":null
                     ,"type":"void"
                     ,"nickname":"rejectAgreementForParticipation"
-                    ,"order":60
+                    ,"order":64
                     ,"produces":
                     ["application/json"
                     ]
@@ -4216,6 +4778,349 @@
             ]
         }
         ,{
+            "path":"/agreements/{agreementId}/members/participantSets/{participantSetId}/participants/{participantId}/securityOptions"
+            ,"operations":
+            [
+                {
+                    "httpMethod":"PUT"
+                    ,"summary":"Updates the security options for a particular participant."
+                    ,"notes":null
+                    ,"type":"void"
+                    ,"nickname":"updateAgreementSecurityOptionsForParticipation"
+                    ,"order":68
+                    ,"produces":
+                    ["application/json"
+                    ]
+                    ,"authorizations":
+                    {
+                        "oauth2":
+                        [
+                            {
+                                "scope":"agreement_write"
+                            }
+                        ]
+                    }
+                    ,"parameters":
+                    [
+                        {
+                            "name":"Authorization"
+                            ,"description":"An <a href=\"#\" onclick=\"this.href=oauthDoc()\" oncontextmenu=\"this.href=oauthDoc()\" target=\"oauthDoc\">OAuth Access Token<\/a> with scopes:<ul><li style='list-style-type: square'><a href=\"#\" onclick=\"this.href=oauthDoc('agreement_write')\" oncontextmenu=\"this.href=oauthDoc('agreement_write')\" target=\"oauthDoc\">agreement_write<\/a><\/li><\/ul>in the format <b>'Bearer {accessToken}'."
+                            ,"required":true
+                            ,"type":"string"
+                            ,"paramType":"header"
+                        }
+                        ,{
+                            "name":"If-Match"
+                            ,"description":"The server will only update the resource if it matches the listed ETag otherwise error RESOURCE_MODIFIED(412) is returned."
+                            ,"required":true
+                            ,"type":"string"
+                            ,"paramType":"header"
+                        }
+                        ,{
+                            "name":"x-api-user"
+                            ,"description":"The userId or email of API caller using the account or group token in the format <b>userid:{userId} OR email:{email}.<\/b> If it is not specified, then the caller is inferred from the token."
+                            ,"required":false
+                            ,"type":"string"
+                            ,"paramType":"header"
+                        }
+                        ,{
+                            "name":"agreementId"
+                            ,"description":"The agreement identifier, as returned by the agreement creation API or retrieved from the API to fetch agreements."
+                            ,"required":true
+                            ,"type":"string"
+                            ,"paramType":"path"
+                        }
+                        ,{
+                            "name":"participantSetId"
+                            ,"description":"The participant set identifier"
+                            ,"required":true
+                            ,"type":"string"
+                            ,"paramType":"path"
+                        }
+                        ,{
+                            "name":"participantId"
+                            ,"description":"The participant identifier"
+                            ,"required":true
+                            ,"type":"string"
+                            ,"paramType":"path"
+                        }
+                        ,{
+                            "name":"ParticipantSecurityOption"
+                            ,"description":"Security options that apply to the participant"
+                            ,"required":true
+                            ,"type":"ParticipantSecurityOption"
+                            ,"paramType":"body"
+                        }
+                    ]
+                    ,"errorResponses":
+                    [
+                        {
+                            "code":"400"
+                            ,"reason":"BAD_REQUEST: The request provided is invalid."
+                        }
+                        ,{
+                            "code":"400"
+                            ,"reason":"INVALID_COUNTRY_CODE: Country code provided is invalid."
+                        }
+                        ,{
+                            "code":"400"
+                            ,"reason":"INVALID_JSON: An invalid JSON was specified."
+                        }
+                        ,{
+                            "code":"400"
+                            ,"reason":"INVALID_PASSWORD: Password provided is invalid."
+                        }
+                        ,{
+                            "code":"400"
+                            ,"reason":"INVALID_PHONE: Phone number provided is invalid."
+                        }
+                        ,{
+                            "code":"400"
+                            ,"reason":"MISSING_IF_MATCH_HEADER: If-Match header missing."
+                        }
+                        ,{
+                            "code":"400"
+                            ,"reason":"MISSING_REQUIRED_PARAM: Required parameters are missing."
+                        }
+                        ,{
+                            "code":"401"
+                            ,"reason":"INVALID_ACCESS_TOKEN: Access token provided is invalid or has expired."
+                        }
+                        ,{
+                            "code":"401"
+                            ,"reason":"INVALID_USER: Invalid user ID or email provided in x-user header."
+                        }
+                        ,{
+                            "code":"401"
+                            ,"reason":"NO_ACCESS_TOKEN_HEADER: Access token header not provided."
+                        }
+                        ,{
+                            "code":"401"
+                            ,"reason":"NO_AUTHORIZATION_HEADER: Authorization header not provided."
+                        }
+                        ,{
+                            "code":"403"
+                            ,"reason":"AGREEMENT_IN_DRAFT_STATE: The agreement is in draft state."
+                        }
+                        ,{
+                            "code":"403"
+                            ,"reason":"API_TERMS_NOT_ACCEPTED: Your account is locked because an administrator has not agreed to Adobe Sign's Terms of Use. Please contact your account administrator to activate your account."
+                        }
+                        ,{
+                            "code":"403"
+                            ,"reason":"GOV_ID_LIMIT_EXCEEDED: Government ID for identity verification is exhausted. Please select another method or contact your administrator."
+                        }
+                        ,{
+                            "code":"403"
+                            ,"reason":"KBA_LIMIT_EXCEEDED: KBA limit for identity verification is exhausted. Please select another method or contact your administrator."
+                        }
+                        ,{
+                            "code":"403"
+                            ,"reason":"PERMISSION_DENIED: The API caller does not have the permission to execute this operation."
+                        }
+                        ,{
+                            "code":"403"
+                            ,"reason":"PHONE_AUTH_LIMIT_EXCEEDED: Phone usage limit for identity verification is exhausted. Please select another method or contact your administrator."
+                        }
+                        ,{
+                            "code":"404"
+                            ,"reason":"AGREEMENT_ARCHIVED: The agreement is archived."
+                        }
+                        ,{
+                            "code":"404"
+                            ,"reason":"AGREEMENT_EXPIRED: The agreement is expired."
+                        }
+                        ,{
+                            "code":"404"
+                            ,"reason":"AGREEMENT_NOT_VISIBLE: The agreement is not visible to this user for signing."
+                        }
+                        ,{
+                            "code":"404"
+                            ,"reason":"INVALID_AGREEMENT_ID: The Agreement ID specified is invalid."
+                        }
+                        ,{
+                            "code":"404"
+                            ,"reason":"INVALID_PARTICIPANT_ID: The participant ID specified is invalid."
+                        }
+                        ,{
+                            "code":"404"
+                            ,"reason":"INVALID_PARTICIPANT_SET_ID: The participant set ID specified is invalid."
+                        }
+                        ,{
+                            "code":"409"
+                            ,"reason":"AGREEMENT_ALREADY_CANCELLED: The agreement being modified has already been cancelled."
+                        }
+                        ,{
+                            "code":"409"
+                            ,"reason":"AGREEMENT_ALREADY_SIGNED: The agreement being modified has already been signed."
+                        }
+                        ,{
+                            "code":"412"
+                            ,"reason":"RESOURCE_MODIFIED: Resource is already modified with newer version."
+                        }
+                        ,{
+                            "code":"500"
+                            ,"reason":"MISC_SERVER_ERROR: Some miscellaneous error has occurred."
+                        }
+                    ]
+                }
+            ]
+        }
+        ,{
+            "path":"/agreements/{agreementId}/reminders/{reminderId}"
+            ,"operations":
+            [
+                {
+                    "httpMethod":"PUT"
+                    ,"summary":"Updates an existing reminder for an agreement"
+                    ,"notes":"You can only update an ACTIVE reminder, and can only update the status to 'CANCELED', update reminderParticipantIds, or update note."
+                    ,"type":"void"
+                    ,"nickname":"updateAgreementReminder"
+                    ,"order":69
+                    ,"produces":
+                    ["application/json"
+                    ]
+                    ,"authorizations":
+                    {
+                        "oauth2":
+                        [
+                            {
+                                "scope":"agreement_write"
+                            }
+                        ]
+                    }
+                    ,"parameters":
+                    [
+                        {
+                            "name":"Authorization"
+                            ,"description":"An <a href=\"#\" onclick=\"this.href=oauthDoc()\" oncontextmenu=\"this.href=oauthDoc()\" target=\"oauthDoc\">OAuth Access Token<\/a> with scopes:<ul><li style='list-style-type: square'><a href=\"#\" onclick=\"this.href=oauthDoc('agreement_write')\" oncontextmenu=\"this.href=oauthDoc('agreement_write')\" target=\"oauthDoc\">agreement_write<\/a><\/li><\/ul>in the format <b>'Bearer {accessToken}'."
+                            ,"required":true
+                            ,"type":"string"
+                            ,"paramType":"header"
+                        }
+                        ,{
+                            "name":"x-api-user"
+                            ,"description":"The userId or email of API caller using the account or group token in the format <b>userid:{userId} OR email:{email}.<\/b> If it is not specified, then the caller is inferred from the token."
+                            ,"required":false
+                            ,"type":"string"
+                            ,"paramType":"header"
+                        }
+                        ,{
+                            "name":"x-on-behalf-of-user"
+                            ,"description":"The userId or email in the format <b>userid:{userId} OR email:{email}.<\/b> of the user that has shared his/her account"
+                            ,"required":false
+                            ,"type":"string"
+                            ,"paramType":"header"
+                        }
+                        ,{
+                            "name":"agreementId"
+                            ,"description":"The agreement identifier, as returned by the agreement creation API or retrieved from the API to fetch agreements."
+                            ,"required":true
+                            ,"type":"string"
+                            ,"paramType":"path"
+                        }
+                        ,{
+                            "name":"reminderId"
+                            ,"description":"The reminder identifier"
+                            ,"required":true
+                            ,"type":"string"
+                            ,"paramType":"path"
+                        }
+                        ,{
+                            "name":"ReminderInfo"
+                            ,"description":"The information about a reminder associated with a recipient of an agreement."
+                            ,"required":true
+                            ,"type":"ReminderInfo"
+                            ,"paramType":"body"
+                        }
+                    ]
+                    ,"errorResponses":
+                    [
+                        {
+                            "code":"400"
+                            ,"reason":"BAD_REQUEST: The request provided is invalid."
+                        }
+                        ,{
+                            "code":"400"
+                            ,"reason":"INVALID_JSON: An invalid JSON was specified."
+                        }
+                        ,{
+                            "code":"400"
+                            ,"reason":"INVALID_ON_BEHALF_OF_USER_HEADER: Value provided in x-on-behalf-Of-user header is in invalid format."
+                        }
+                        ,{
+                            "code":"400"
+                            ,"reason":"INVALID_REMINDER_RECIPIENT_PIDS: One or more of the participant ID(s) of the reminder recipients provided in the request are invalid."
+                        }
+                        ,{
+                            "code":"400"
+                            ,"reason":"INVALID_REMINDER_STATUS: Status of the reminder provided in the request is invalid. Reminder cannot be created in the CANCELED or updated to the ACTIVE state."
+                        }
+                        ,{
+                            "code":"400"
+                            ,"reason":"INVALID_X_API_USER_HEADER: Value provided in x-api-user header is in invalid format."
+                        }
+                        ,{
+                            "code":"401"
+                            ,"reason":"INVALID_ACCESS_TOKEN: Access token provided is invalid or has expired."
+                        }
+                        ,{
+                            "code":"401"
+                            ,"reason":"NO_ACCESS_TOKEN_HEADER: Access token header not provided."
+                        }
+                        ,{
+                            "code":"401"
+                            ,"reason":"NO_AUTHORIZATION_HEADER: Authorization header not provided."
+                        }
+                        ,{
+                            "code":"403"
+                            ,"reason":"CANNOT_UPDATE_CANCELED_OR_COMPLETE_REMINDER: Canceled or complete reminders cannot be updated."
+                        }
+                        ,{
+                            "code":"403"
+                            ,"reason":"CANNOT_UPDATE_REMINDER_TIMING: Reminder timing cannot be updated once started."
+                        }
+                        ,{
+                            "code":"403"
+                            ,"reason":"CANNOT_UPDATE_REMINDER_WHEN_CANCELING: Only status can be updated when canceling a reminder."
+                        }
+                        ,{
+                            "code":"403"
+                            ,"reason":"PERMISSION_DENIED: The API caller does not have the permission to execute this operation."
+                        }
+                        ,{
+                            "code":"404"
+                            ,"reason":"AGREEMENT_ARCHIVED: The agreement is archived."
+                        }
+                        ,{
+                            "code":"404"
+                            ,"reason":"AGREEMENT_DELETED: The agreement has been deleted."
+                        }
+                        ,{
+                            "code":"404"
+                            ,"reason":"AGREEMENT_EXPIRED: The agreement is expired."
+                        }
+                        ,{
+                            "code":"404"
+                            ,"reason":"INVALID_AGREEMENT_ID: The Agreement ID specified is invalid."
+                        }
+                        ,{
+                            "code":"404"
+                            ,"reason":"INVALID_REMINDER_ID: The reminder ID specified is invalid."
+                        }
+                        ,{
+                            "code":"409"
+                            ,"reason":"AGREEMENT_ALREADY_CANCELLED: The agreement being modified has already been cancelled."
+                        }
+                        ,{
+                            "code":"500"
+                            ,"reason":"MISC_SERVER_ERROR: Some miscellaneous error has occurred."
+                        }
+                    ]
+                }
+            ]
+        }
+        ,{
             "path":"/agreements/{agreementId}/state"
             ,"operations":
             [
@@ -4225,7 +5130,7 @@
                     ,"notes":"This endpoint can be used by originator/sender of an agreement to transition between the states of agreement. An allowed transition would follow the following sequence: DRAFT -> AUTHORING -> IN_PROCESS -> CANCELLED."
                     ,"type":"void"
                     ,"nickname":"updateAgreementState"
-                    ,"order":64
+                    ,"order":70
                     ,"produces":
                     ["application/json"
                     ]
@@ -4323,6 +5228,10 @@
                         }
                         ,{
                             "code":"403"
+                            ,"reason":"GOV_ID_LIMIT_EXCEEDED: Government ID for identity verification is exhausted. Please select another method or contact your administrator."
+                        }
+                        ,{
+                            "code":"403"
                             ,"reason":"KBA_LIMIT_EXCEEDED: KBA limit for identity verification is exhausted. Please select another method or contact your administrator."
                         }
                         ,{
@@ -4354,6 +5263,117 @@
             ]
         }
         ,{
+            "path":"/agreements/{agreementId}/me/note"
+            ,"operations":
+            [
+                {
+                    "httpMethod":"PUT"
+                    ,"summary":"Updates the latest note associated with an agreement."
+                    ,"notes":null
+                    ,"type":"void"
+                    ,"nickname":"updateAgreementNoteForApiUser"
+                    ,"order":73
+                    ,"produces":
+                    ["application/json"
+                    ]
+                    ,"authorizations":
+                    {
+                        "oauth2":
+                        [
+                            {
+                                "scope":"agreement_write"
+                            }
+                        ]
+                    }
+                    ,"parameters":
+                    [
+                        {
+                            "name":"Authorization"
+                            ,"description":"An <a href=\"#\" onclick=\"this.href=oauthDoc()\" oncontextmenu=\"this.href=oauthDoc()\" target=\"oauthDoc\">OAuth Access Token<\/a> with scopes:<ul><li style='list-style-type: square'><a href=\"#\" onclick=\"this.href=oauthDoc('agreement_write')\" oncontextmenu=\"this.href=oauthDoc('agreement_write')\" target=\"oauthDoc\">agreement_write<\/a><\/li><\/ul>in the format <b>'Bearer {accessToken}'."
+                            ,"required":true
+                            ,"type":"string"
+                            ,"paramType":"header"
+                        }
+                        ,{
+                            "name":"x-api-user"
+                            ,"description":"The userId or email of API caller using the account or group token in the format <b>userid:{userId} OR email:{email}.<\/b> If it is not specified, then the caller is inferred from the token."
+                            ,"required":false
+                            ,"type":"string"
+                            ,"paramType":"header"
+                        }
+                        ,{
+                            "name":"x-on-behalf-of-user"
+                            ,"description":"The userId or email in the format <b>userid:{userId} OR email:{email}.<\/b> of the user that has shared his/her account"
+                            ,"required":false
+                            ,"type":"string"
+                            ,"paramType":"header"
+                        }
+                        ,{
+                            "name":"agreementId"
+                            ,"description":"The agreement identifier, as returned by the agreement creation API or retrieved from the API to fetch agreements."
+                            ,"required":true
+                            ,"type":"string"
+                            ,"paramType":"path"
+                        }
+                        ,{
+                            "name":"Note"
+                            ,"description":"The note to be associated with the agreement."
+                            ,"required":true
+                            ,"type":"Note"
+                            ,"paramType":"body"
+                        }
+                    ]
+                    ,"errorResponses":
+                    [
+                        {
+                            "code":"400"
+                            ,"reason":"INVALID_ON_BEHALF_OF_USER_HEADER: Value provided in x-on-behalf-Of-user header is in invalid format."
+                        }
+                        ,{
+                            "code":"400"
+                            ,"reason":"INVALID_X_API_USER_HEADER: Value provided in x-api-user header is in invalid format."
+                        }
+                        ,{
+                            "code":"400"
+                            ,"reason":"MISSING_REQUIRED_PARAM: Required parameters are missing."
+                        }
+                        ,{
+                            "code":"401"
+                            ,"reason":"INVALID_ACCESS_TOKEN: Access token provided is invalid or has expired."
+                        }
+                        ,{
+                            "code":"401"
+                            ,"reason":"INVALID_ON_BEHALF_OF_USER: Invalid user ID or email provided in x-on-behalf-of-user header."
+                        }
+                        ,{
+                            "code":"401"
+                            ,"reason":"INVALID_USER: Invalid user ID or email provided in x-user header."
+                        }
+                        ,{
+                            "code":"401"
+                            ,"reason":"NO_AUTHORIZATION_HEADER: Authorization header not provided."
+                        }
+                        ,{
+                            "code":"403"
+                            ,"reason":"API_TERMS_NOT_ACCEPTED: Your account is locked because an administrator has not agreed to Adobe Sign's Terms of Use. Please contact your account administrator to activate your account."
+                        }
+                        ,{
+                            "code":"403"
+                            ,"reason":"PERMISSION_DENIED: The API caller does not have the permission to execute this operation."
+                        }
+                        ,{
+                            "code":"404"
+                            ,"reason":"INVALID_AGREEMENT_ID: The Agreement ID specified is invalid."
+                        }
+                        ,{
+                            "code":"500"
+                            ,"reason":"MISC_SERVER_ERROR: Some miscellaneous error has occurred."
+                        }
+                    ]
+                }
+            ]
+        }
+        ,{
             "path":"/agreements/{agreementId}/documents"
             ,"operations":
             [
@@ -4363,7 +5383,7 @@
                     ,"notes":null
                     ,"type":"void"
                     ,"nickname":"deleteDocuments"
-                    ,"order":70
+                    ,"order":77
                     ,"produces":
                     ["application/json"
                     ]
@@ -4483,7 +5503,7 @@
     ]
     ,"models":
     {
-        "AgreementInfo":
+        "AgreementCreationInfo":
         {
             "id":"AgreementInfo"
             ,"properties":
@@ -4524,7 +5544,7 @@
                 ,"emailOption":
                 {
                     "required":false
-                    ,"description":"Email configurations for the agreement. Should not be provided in offline agreement creation."
+                    ,"description":"Email configurations for the agreement. Should not be provided in offline agreement creation or when updating a non draft agreement."
                     ,"type":"EmailOption"
                     ,"items":
                     {
@@ -4535,7 +5555,8 @@
                 {
                     "required":false
                     ,"description":"Time after which Agreement expires and needs to be signed before it. Format should be yyyy-MM-dd'T'HH:mm:ssZ. For example, e.g 2016-02-25T18:46:19Z represents UTC time. Should not be provided in offline agreement creation."
-                    ,"type":"date"
+                    ,"type":"string"
+                    ,"format":"date"
                 }
                 ,"externalId":
                 {
@@ -4563,6 +5584,16 @@
                     ,"description":"Integer which specifies the delay in hours before sending the first reminder.<br>This is an optional field. The minimum value allowed is 1 hour and the maximum value can\u2019t be more than the difference of agreement creation and expiry time of the agreement in hours.<br>If this is not specified but the reminder frequency is specified, then the first reminder will be sent based on frequency.<br>i.e. if the reminder is created with frequency specified as daily, the firstReminderDelay will be 24 hours. Should not be provided in offline agreement creation."
                     ,"type":"integer"
                 }
+                ,"formFieldLayerTemplates":
+                {
+                    "required":false
+                    ,"description":"Specifies the form field layer template or source of form fields to apply on the files in this transaction. If specified, the FileInfo for this parameter must refer to a form field layer template via libraryDocumentId or libraryDocumentName, or if specified via transientDocumentId or documentURL, it must be of a supported file type. Note: Only one of the four parameters in every FileInfo object must be specified"
+                    ,"type":"array"
+                    ,"items":
+                    {
+                        "$ref":"FileInfo"
+                    }
+                }
                 ,"id":
                 {
                     "required":false
@@ -4574,6 +5605,16 @@
                     "required":false
                     ,"description":"The locale associated with this agreement - specifies the language for the signing page and emails, for example en_US or fr_FR. If none specified, defaults to the language configured for the agreement sender"
                     ,"type":"string"
+                }
+                ,"mergeFieldInfo":
+                {
+                    "required":false
+                    ,"description":"Optional default values for fields to merge into the document. The values will be presented to the signers for editable fields; for read-only fields the provided values will not be editable during the signing process. Merging data into fields is currently not supported when used with libraryDocumentId or libraryDocumentName. Only file and url are currently supported"
+                    ,"type":"array"
+                    ,"items":
+                    {
+                        "$ref":"MergefieldInfo"
+                    }
                 }
                 ,"message":
                 {
@@ -4610,9 +5651,9 @@
                 ,"reminderFrequency":
                 {
                     "required":false
-                    ,"description":"Optional parameter that sets how often you want to send reminders to the participants. If it is not specified, the default frequency set for the account will be used. Should not be provided in offline agreement creation."
+                    ,"description":"Optional parameter that sets how often you want to send reminders to the participants. If it is not specified, the default frequency set for the account will be used. Should not be provided in offline agreement creation. If provided in PUT as a different value than the current one, an error will be thrown."
                     ,"type":"string"
-                    ,"enum":["DAILY_UNTIL_SIGNED","WEEKLY_UNTIL_SIGNED"]
+                    ,"enum":["DAILY_UNTIL_SIGNED","WEEKDAILY_UNTIL_SIGNED","EVERY_OTHER_DAY_UNTIL_SIGNED","EVERY_THIRD_DAY_UNTIL_SIGNED","EVERY_FIFTH_DAY_UNTIL_SIGNED","WEEKLY_UNTIL_SIGNED","ONCE"]
                 }
                 ,"securityOption":
                 {
@@ -4890,6 +5931,25 @@
                 }
             }
         }
+        ,"MergefieldInfo":
+        {
+            "id":"MergefieldInfo"
+            ,"properties":
+            {
+                "defaultValue":
+                {
+                    "required":true
+                    ,"description":"The default value of the field"
+                    ,"type":"string"
+                }
+                ,"fieldName":
+                {
+                    "required":true
+                    ,"description":"The name of the field"
+                    ,"type":"string"
+                }
+            }
+        }
         ,"ParticipantSetInfo":
         {
             "id":"ParticipantSetInfo"
@@ -4956,7 +6016,7 @@
                 "email":
                 {
                     "required":true
-                    ,"description":"Email of the particpant. In case of creating new Agreements(POST/PUT), this is a required field. In case of GET, this is the required field and will always be returned unless it is a fax workflow( legacy agreements) that were created using fax as input"
+                    ,"description":"Email of the participant. In case of creating new Agreements(POST/PUT), this is a required field. In case of GET, this is the required field and will always be returned unless it is a fax workflow( legacy agreements) that were created using fax as input"
                     ,"type":"string"
                 }
                 ,"securityOption":
@@ -4979,14 +6039,14 @@
                 "authenticationMethod":
                 {
                     "required":true
-                    ,"description":"The authentication method for the participants to have access to view and sign the document"
+                    ,"description":"The authentication method for the participants to have access to view and sign the document. When replacing a participant that has PASSWORD or PHONE authentication specified, you must supply a password or phone number for the new participant, and you cannot change the authentication method"
                     ,"type":"string"
-                    ,"enum":["NONE","PASSWORD","PHONE","KBA","WEB_IDENTITY","ADOBE_SIGN"]
+                    ,"enum":["NONE","PASSWORD","PHONE","KBA","WEB_IDENTITY","ADOBE_SIGN","GOV_ID"]
                 }
                 ,"password":
                 {
                     "required":false
-                    ,"description":"The password required for the participant to view and sign the document. Note that AdobeSign will never show this password to anyone, so you will need to separately communicate it to any relevant parties. The password will not be returned in GET call. In case of PUT call, password associated with Agreement resource will remain unchanged if no password is specified but authentication method is provided as PASSWORD"
+                    ,"description":"The password required for the participant to view and sign the document. Note that AdobeSign will never show this password to anyone, so you will need to separately communicate it to any relevant parties. The password will not be returned in GET call. When replacing a participant that has PASSWORD authentication specified, you must supply a password for the new participant."
                     ,"type":"string"
                 }
                 ,"phoneInfo":
@@ -5009,13 +6069,13 @@
                 "countryCode":
                 {
                     "required":false
-                    ,"description":"The phone Info country code required for the participant to view and sign the document if authentication method is PHONE"
+                    ,"description":"The numeric country calling code (ISD code) required for the participant to view and sign the document if authentication type is PHONE"
                     ,"type":"string"
                 }
                 ,"phone":
                 {
                     "required":false
-                    ,"description":"The phone number required for the participant to view and sign the document if authentication method is PHONE"
+                    ,"description":"The phone number required for the participant to view and sign the document if authentication method is PHONE. When replacing a participant that has PHONE authentication specified, you must supply a phone number for the new participant."
                     ,"type":"string"
                 }
             }
@@ -5153,7 +6213,8 @@
                 {
                     "required":false
                     ,"description":"Width of the border of the field in pixels"
-                    ,"type":"double"
+                    ,"type":"number"
+                    ,"format":"double"
                 }
                 ,"calculated":
                 {
@@ -5219,7 +6280,8 @@
                 {
                     "required":false
                     ,"description":"Font size of the form field in points"
-                    ,"type":"double"
+                    ,"type":"number"
+                    ,"format":"double"
                 }
                 ,"hiddenOptions":
                 {
@@ -5274,25 +6336,27 @@
                 {
                     "required":false
                     ,"description":"Maximum length of the input text field in terms of no. of characters"
-                    ,"type":"int"
+                    ,"type":"integer"
                 }
                 ,"maxValue":
                 {
                     "required":false
                     ,"description":"Upper bound of the number that can be entered by the signer"
-                    ,"type":"double"
+                    ,"type":"number"
+                    ,"format":"double"
                 }
                 ,"minLength":
                 {
                     "required":false
                     ,"description":"Minimum length of the input text field in terms of no. of characters"
-                    ,"type":"int"
+                    ,"type":"integer"
                 }
                 ,"minValue":
                 {
                     "required":false
                     ,"description":"Lower bound of the number that can be entered by the signer"
-                    ,"type":"double"
+                    ,"type":"number"
+                    ,"format":"double"
                 }
                 ,"name":
                 {
@@ -5331,6 +6395,12 @@
                     "required":false
                     ,"description":"Text that appears while hovering over the field"
                     ,"type":"string"
+                }
+                ,"urlOverridable":
+                {
+                    "required":false
+                    ,"description":"For widget text fields only - true if the default value may come from the URL, else false"
+                    ,"type":"boolean"
                 }
                 ,"validation":
                 {
@@ -5417,7 +6487,7 @@
                 {
                     "required":false
                     ,"description":"Index of the location of the form field used in the predicate"
-                    ,"type":"int"
+                    ,"type":"integer"
                 }
                 ,"fieldName":
                 {
@@ -5481,13 +6551,15 @@
                 {
                     "required":true
                     ,"description":"Height of the form field in pixels"
-                    ,"type":"double"
+                    ,"type":"number"
+                    ,"format":"double"
                 }
                 ,"left":
                 {
                     "required":true
                     ,"description":"No. of pixels from left of the page for form field placement"
-                    ,"type":"double"
+                    ,"type":"number"
+                    ,"format":"double"
                 }
                 ,"pageNumber":
                 {
@@ -5499,13 +6571,15 @@
                 {
                     "required":true
                     ,"description":"No. of pixels from bottom of the page for form field placement"
-                    ,"type":"double"
+                    ,"type":"number"
+                    ,"format":"double"
                 }
                 ,"width":
                 {
                     "required":true
                     ,"description":"Width of the form field in pixels"
-                    ,"type":"double"
+                    ,"type":"number"
+                    ,"format":"double"
                 }
             }
         }
@@ -5546,7 +6620,7 @@
                 ,"securityOption":
                 {
                     "required":true
-                    ,"description":"Security options that apply to the participant. This cannot be changed as part of the PUT call"
+                    ,"description":"Security options that apply to the participant."
                     ,"type":"DelegatedParticipantSecurityOption"
                     ,"items":
                     {
@@ -5666,40 +6740,40 @@
                 "firstReminderDelay":
                 {
                     "required":false
-                    ,"description":"Integer which specifies the delay in hours before sending the first reminder.<br>This is an optional field. The minimum value allowed is 1 hour and the maximum value can\u2019t be more than the difference of agreement creation and expiry time of the agreement in hours.<br>If this is not specified but the reminder frequency is specified, then the first reminder will be sent based on frequency.<br>i.e. if the reminder is created with frequency specified as daily, the firstReminderDelay will be 24 hours"
+                    ,"description":"Integer which specifies the delay in hours before sending the first reminder.<br>This is an optional field. The minimum value allowed is 1 hour and the maximum value can\u2019t be more than the difference of agreement creation and expiry time of the agreement in hours.<br>If this is not specified but the reminder frequency is specified, then the first reminder will be sent based on frequency.<br>i.e. if the reminder is created with frequency specified as daily, the firstReminderDelay will be 24 hours. Cannot be updated in a PUT"
                     ,"type":"integer"
                 }
                 ,"frequency":
                 {
                     "required":false
-                    ,"description":"The frequency at which reminder will be sent until the agreement is signed.<br>If frequency is not provided, the reminder will be sent once (if the agreement is available at the specified time) with the delay based on the firstReminderDelay field and will never repeat again. If the agreement is not available at that time, reminder will not be sent"
+                    ,"description":"The frequency at which reminder will be sent until the agreement is completed.<br>If frequency is not provided, the reminder will be sent once (if the agreement is available at the specified time) with the delay based on the firstReminderDelay field and will never repeat again. If the agreement is not available at that time, reminder will not be sent. Cannot be updated in a PUT"
                     ,"type":"string"
-                    ,"enum":["DAILY_UNTIL_SIGNED","WEEKLY_UNTIL_SIGNED","ONCE"]
+                    ,"enum":["DAILY_UNTIL_SIGNED","WEEKDAILY_UNTIL_SIGNED","EVERY_OTHER_DAY_UNTIL_SIGNED","EVERY_THIRD_DAY_UNTIL_SIGNED","EVERY_FIFTH_DAY_UNTIL_SIGNED","WEEKLY_UNTIL_SIGNED","ONCE"]
                 }
                 ,"lastSentDate":
                 {
                     "required":false
-                    ,"description":"The date when the reminder was last sent. Only provided in GET. Cannot be provided in POST request. If provided in POST, it will be ignored. Format would be yyyy-MM-dd'T'HH:mm:ssZ. For example, e.g 2016-02-25T18:46:19Z represents UTC time"
+                    ,"description":"The date when the reminder was last sent. Only provided in GET. Cannot be provided in POST request. If provided in POST, it will be ignored. Cannot be updated in a PUT. Format would be yyyy-MM-dd'T'HH:mm:ssZ. For example, e.g 2016-02-25T18:46:19Z represents UTC time"
                     ,"type":"string"
                     ,"format":"date"
                 }
                 ,"nextSentDate":
                 {
                     "required":false
-                    ,"description":"The date when the reminder is scheduled to be sent next. Only provided in GET. Cannot be provided in POST request. If provided in POST, it will be ignored. Format would be yyyy-MM-dd'T'HH:mm:ssZ. For example, e.g 2016-02-25T18:46:19Z represents UTC time"
+                    ,"description":"The date when the reminder is scheduled to be sent next. When provided in POST request, frequency needs to be ONCE (or not specified), startReminderCounterFrom needs to be REMINDER_CREATION (or not specified) and firstReminderDelay needs to be 0 (or not specified). Cannot be updated in a PUT. Format would be yyyy-MM-dd'T'HH:mm:ssZ. For example, e.g 2016-02-25T18:46:19Z represents UTC time"
                     ,"type":"string"
                     ,"format":"date"
                 }
                 ,"note":
                 {
                     "required":false
-                    ,"description":"An optional message sent to the recipients, describing why their signatures are required"
+                    ,"description":"An optional message sent to the recipients, describing why their participation is required"
                     ,"type":"string"
                 }
                 ,"recipientParticipantIds":
                 {
                     "required":true
-                    ,"description":"A list of one or more participant IDs to create the reminder on. The reminder will be sent to all the participants specified by the list of participant IDs."
+                    ,"description":"A list of one or more participant IDs that the reminder should be sent to. These must be recipients of the agreement and not sharees or cc's."
                     ,"type":"array"
                     ,"items":
                     {
@@ -5709,22 +6783,22 @@
                 ,"reminderId":
                 {
                     "required":false
-                    ,"description":"An identifier of the reminder resource created on the server. Only provided in GET. Cannot be provided in POST request. If provided in POST, it will be ignored"
+                    ,"description":"An identifier of the reminder resource created on the server. If provided in POST or PUT, it will be ignored"
                     ,"type":"string"
                 }
                 ,"startReminderCounterFrom":
                 {
                     "required":false
-                    ,"description":"Reminder can be sent based on when the agreement becomes available or when the reminder is created<br><b>AGREEMENT_AVAILABILITY :<\/b><br>If the agreement is not available to the participantSet at the time of reminder creation, the reminder will be sent for the first time, only when the agreement becomes available to the participantSet taking the firstReminderDelay into account. Subsequent reminders will be sent based on the frequency specified.<br>If the agreement is already available to the participantSet at the time of reminder creation, the first reminder will be sent after the delay specified by firstReminderDelay from the reminder creation time.<br><br><b>REMINDER_CREATION :<\/b><br>The first reminder will be sent after the delay specified by firstReminderDelay from the reminder creation time only if the agreement is available at that time. Subsequent reminders will be triggered based on the frequency specified and will be sent only if the agreement is available at that time.<br>For agreements in authoring state, creating reminder with startReminderCounterFrom as REMINDER_CREATION is not allowed.<br>Note : If firstReminderDelay, frequency and startReminderCounterFrom fields are not specified, reminder will be sent right now if the agreement is available. If agreement is not available, an error will be thrown."
+                    ,"description":"Reminder can be sent based on when the agreement becomes available or when the reminder is created<br>AGREEMENT_AVAILABILITY: If the agreement is not available to the participant at the time of reminder creation, the reminder will be sent for the first time, only when the agreement becomes available to the participant taking the firstReminderDelay into account. Subsequent reminders will be sent based on the frequency specified.  If the agreement is already available to the participant at the time of reminder creation, the first reminder will be sent after the delay specified by firstReminderDelay from the reminder creation time.<br>REMINDER_CREATION: The first reminder will be sent after the delay specified by firstReminderDelay from the reminder creation time only if the agreement is available at that time. Subsequent reminders will be triggered based on the frequency specified and will be sent only if the agreement is available at that time.  For agreements in authoring state, creating reminder with startReminderCounterFrom as REMINDER_CREATION is not allowed.<br>Note : If firstReminderDelay, frequency and startReminderCounterFrom fields are not specified in POST, reminder will be sent right now if the agreement is available. If agreement is not available, an error will be thrown.  Cannot be updated in a PUT"
                     ,"type":"string"
                     ,"enum":["AGREEMENT_AVAILABILITY","REMINDER_CREATION"]
                 }
                 ,"status":
                 {
                     "required":true
-                    ,"description":"Current status of the reminder"
+                    ,"description":"Current status of the reminder.  The only valid update in a PUT is from ACTIVE to CANCELED.  Must be provided as ACTIVE in a POST."
                     ,"type":"string"
-                    ,"enum":["ACTIVE"]
+                    ,"enum":["ACTIVE","CANCELED","COMPLETE"]
                 }
             }
         }
@@ -5736,7 +6810,7 @@
                 "id":
                 {
                     "required":false
-                    ,"description":"An identifier of the reminder resource created on the server. Only provided in GET. Cannot be provided in POST request. If provided in POST, it will be ignored"
+                    ,"description":"An identifier of the reminder resource created on the server. If provided in POST or PUT, it will be ignored"
                     ,"type":"string"
                 }
             }
@@ -5772,7 +6846,7 @@
                     ,"description":"Name of the requested agreement view"
                     ,"showInSampleRequest":true
                     ,"type":"string"
-                    ,"enum":["COMPOSE","PREFILL","AUTHORING","SEND_PROGRESS","POST_CREATE","DOCUMENT","MANAGE","SIGNING","ALL"]
+                    ,"enum":["COMPOSE","MODIFY","PREFILL","AUTHORING","SEND_PROGRESS","POST_CREATE","DOCUMENT","MANAGE","SIGNING","ALL"]
                 }
             }
         }
@@ -5809,7 +6883,7 @@
                 "fileUploadOptions":
                 {
                     "required":false
-                    ,"description":"Controls various file upload options available on the send page"
+                    ,"description":"Controls various file upload options available on the compose page"
                     ,"type":"FileUploadOptions"
                     ,"items":
                     {
@@ -5819,7 +6893,7 @@
                 ,"isPreviewSelected":
                 {
                     "required":false
-                    ,"description":"Should the COMPOSE page be provided with authoring mode selected?"
+                    ,"description":"Should the compose page be provided with authoring mode selected?"
                     ,"type":"boolean"
                 }
             }
@@ -5896,7 +6970,7 @@
                     ,"description":"Name of the requested agreement view"
                     ,"showInSampleRequest":true
                     ,"type":"string"
-                    ,"enum":["COMPOSE","PREFILL","AUTHORING","SEND_PROGRESS","POST_CREATE","DOCUMENT","MANAGE","SIGNING","ALL"]
+                    ,"enum":["COMPOSE","MODIFY","PREFILL","AUTHORING","SEND_PROGRESS","POST_CREATE","DOCUMENT","MANAGE","SIGNING","ALL"]
                 }
                 ,"url":
                 {
@@ -6055,6 +7129,213 @@
                 }
             }
         }
+        ,"AgreementInfo":
+        {
+            "id":"AgreementInfo"
+            ,"properties":
+            {
+                "ccs":
+                {
+                    "required":false
+                    ,"description":"A list of one or more CCs that will be copied in the agreement transaction. The CCs will each receive an email at the beginning of the transaction and also when the final document is signed. The email addresses will also receive a copy of the document, attached as a PDF file. Should not be provided in offline agreement creation."
+                    ,"type":"array"
+                    ,"items":
+                    {
+                        "$ref":"AgreementCcInfo"
+                    }
+                }
+                ,"createdDate":
+                {
+                    "required":false
+                    ,"description":"Date when agreement was created. This is a server generated attributed and can not be provided in POST/PUT calls. Format would be yyyy-MM-dd'T'HH:mm:ssZ. For example, e.g 2016-02-25T18:46:19Z represents UTC time"
+                    ,"type":"string"
+                    ,"format":"date"
+                }
+                ,"deviceInfo":
+                {
+                    "required":false
+                    ,"description":"Device info of the offline device. It should only be provided in case of offline agreement creation."
+                    ,"type":"OfflineDeviceInfo"
+                    ,"items":
+                    {
+                        "$ref":"OfflineDeviceInfo"
+                    }
+                }
+                ,"documentVisibilityEnabled":
+                {
+                    "required":false
+                    ,"description":"If set to true, enable limited document visibility. Should not be provided in offline agreement creation."
+                    ,"type":"boolean"
+                }
+                ,"emailOption":
+                {
+                    "required":false
+                    ,"description":"Email configurations for the agreement. Should not be provided in offline agreement creation or when updating a non draft agreement."
+                    ,"type":"EmailOption"
+                    ,"items":
+                    {
+                        "$ref":"EmailOption"
+                    }
+                }
+                ,"expirationTime":
+                {
+                    "required":false
+                    ,"description":"Time after which Agreement expires and needs to be signed before it. Format should be yyyy-MM-dd'T'HH:mm:ssZ. For example, e.g 2016-02-25T18:46:19Z represents UTC time. Should not be provided in offline agreement creation."
+                    ,"type":"string"
+                    ,"format":"date"
+                }
+                ,"externalId":
+                {
+                    "required":false
+                    ,"description":"An arbitrary value from your system, which can be specified at sending time and then later returned or queried. Should not be provided in offline agreement creation."
+                    ,"type":"ExternalId"
+                    ,"items":
+                    {
+                        "$ref":"ExternalId"
+                    }
+                }
+                ,"fileInfos":
+                {
+                    "required":true
+                    ,"description":"A list of one or more files (or references to files) that will be sent out for signature. If more than one file is provided, they will be combined into one PDF before being sent out. Note: Only one of the four parameters in every FileInfo object must be specified"
+                    ,"type":"array"
+                    ,"items":
+                    {
+                        "$ref":"FileInfo"
+                    }
+                }
+                ,"firstReminderDelay":
+                {
+                    "required":false
+                    ,"description":"Integer which specifies the delay in hours before sending the first reminder.<br>This is an optional field. The minimum value allowed is 1 hour and the maximum value can\u2019t be more than the difference of agreement creation and expiry time of the agreement in hours.<br>If this is not specified but the reminder frequency is specified, then the first reminder will be sent based on frequency.<br>i.e. if the reminder is created with frequency specified as daily, the firstReminderDelay will be 24 hours. Should not be provided in offline agreement creation."
+                    ,"type":"integer"
+                }
+                ,"formFieldLayerTemplates":
+                {
+                    "required":false
+                    ,"description":"Specifies the form field layer template or source of form fields to apply on the files in this transaction. If specified, the FileInfo for this parameter must refer to a form field layer template via libraryDocumentId or libraryDocumentName, or if specified via transientDocumentId or documentURL, it must be of a supported file type. Note: Only one of the four parameters in every FileInfo object must be specified"
+                    ,"type":"array"
+                    ,"items":
+                    {
+                        "$ref":"FileInfo"
+                    }
+                }
+                ,"id":
+                {
+                    "required":false
+                    ,"description":"The unique identifier of the agreement.If provided in POST, it will simply be ignored"
+                    ,"type":"string"
+                }
+                ,"locale":
+                {
+                    "required":false
+                    ,"description":"The locale associated with this agreement - specifies the language for the signing page and emails, for example en_US or fr_FR. If none specified, defaults to the language configured for the agreement sender"
+                    ,"type":"string"
+                }
+                ,"mergeFieldInfo":
+                {
+                    "required":false
+                    ,"description":"Optional default values for fields to merge into the document. The values will be presented to the signers for editable fields; for read-only fields the provided values will not be editable during the signing process. Merging data into fields is currently not supported when used with libraryDocumentId or libraryDocumentName. Only file and url are currently supported"
+                    ,"type":"array"
+                    ,"items":
+                    {
+                        "$ref":"MergefieldInfo"
+                    }
+                }
+                ,"message":
+                {
+                    "required":false
+                    ,"description":"An optional message to the participants, describing what is being sent or why their signature is required"
+                    ,"type":"string"
+                }
+                ,"name":
+                {
+                    "required":true
+                    ,"description":"The name of the agreement that will be used to identify it, in emails, website and other places"
+                    ,"type":"string"
+                }
+                ,"participantSetsInfo":
+                {
+                    "required":true
+                    ,"description":"A list of one or more participant set. A participant set may have one or more participant. If any member of the participant set takes the action that has been assigned to the set(Sign/Approve/Acknowledge etc ), the action is considered as the action taken by whole participation set. For regular (non-MegaSign) documents, there is no limit on the number of electronic signatures in a single document. Written signatures are limited to four per document"
+                    ,"type":"array"
+                    ,"items":
+                    {
+                        "$ref":"ParticipantSetInfo"
+                    }
+                }
+                ,"postSignOption":
+                {
+                    "required":false
+                    ,"description":"URL and associated properties for the success page the user will be taken to after completing the signing process. Should not be provided in offline agreement creation."
+                    ,"type":"PostSignOption"
+                    ,"items":
+                    {
+                        "$ref":"PostSignOption"
+                    }
+                }
+                ,"reminderFrequency":
+                {
+                    "required":false
+                    ,"description":"Optional parameter that sets how often you want to send reminders to the participants. If it is not specified, the default frequency set for the account will be used. Should not be provided in offline agreement creation. If provided in PUT as a different value than the current one, an error will be thrown."
+                    ,"type":"string"
+                    ,"enum":["DAILY_UNTIL_SIGNED","WEEKDAILY_UNTIL_SIGNED","EVERY_OTHER_DAY_UNTIL_SIGNED","EVERY_THIRD_DAY_UNTIL_SIGNED","EVERY_FIFTH_DAY_UNTIL_SIGNED","WEEKLY_UNTIL_SIGNED","ONCE"]
+                }
+                ,"securityOption":
+                {
+                    "required":false
+                    ,"description":"Optional secondary security parameters for the agreement. Should not be provided in offline agreement creation."
+                    ,"type":"SecurityOption"
+                    ,"items":
+                    {
+                        "$ref":"SecurityOption"
+                    }
+                }
+                ,"senderEmail":
+                {
+                    "required":false
+                    ,"description":"Email of agreement sender. Only provided in GET. Can not be provided in POST/PUT request. If provided in POST/PUT, it will be ignored"
+                    ,"type":"string"
+                }
+                ,"signatureType":
+                {
+                    "required":true
+                    ,"description":"Specifies the type of signature you would like to request - written or e-signature. The possible values are <br> ESIGN : Agreement needs to be signed electronically <br>,\nWRITTEN : Agreement will be signed using handwritten signature and signed document will be uploaded into the system"
+                    ,"type":"string"
+                    ,"enum":["ESIGN","WRITTEN"]
+                }
+                ,"state":
+                {
+                    "required":false
+                    ,"description":"The state in which the agreement should land. The state field can only be provided in POST calls, will never get returned in GET /agreements/{ID} and will be ignored if provided in PUT /agreements/{ID} call. The eventual status of the agreement can be obtained from GET /agreements/ID"
+                    ,"type":"string"
+                    ,"enum":["AUTHORING","DRAFT","IN_PROCESS"]
+                }
+                ,"status":
+                {
+                    "required":true
+                    ,"description":"This is a server generated attribute which provides the detailed status of an agreement."
+                    ,"type":"string"
+                    ,"enum":["OUT_FOR_SIGNATURE","OUT_FOR_DELIVERY","OUT_FOR_ACCEPTANCE","OUT_FOR_FORM_FILLING","OUT_FOR_APPROVAL","AUTHORING","CANCELLED","SIGNED","APPROVED","DELIVERED","ACCEPTED","FORM_FILLED","EXPIRED","ARCHIVED","PREFILL","WIDGET_WAITING_FOR_VERIFICATION","DRAFT","DOCUMENTS_NOT_YET_PROCESSED","WAITING_FOR_FAXIN","WAITING_FOR_VERIFICATION"]
+                }
+                ,"vaultingInfo":
+                {
+                    "required":false
+                    ,"description":"Vaulting properties that allows Adobe Sign to securely store documents with a vault provider"
+                    ,"type":"VaultingInfo"
+                    ,"items":
+                    {
+                        "$ref":"VaultingInfo"
+                    }
+                }
+                ,"workflowId":
+                {
+                    "required":false
+                    ,"description":"The identifier of custom workflow which defines the routing path of an agreement. Should not be provided in offline agreement creation."
+                    ,"type":"string"
+                }
+            }
+        }
         ,"CombinedDocumentPagesInfo":
         {
             "id":"CombinedDocumentPagesInfo"
@@ -6081,25 +7362,41 @@
                 {
                     "required":true
                     ,"description":"Height of the page"
-                    ,"type":"double"
+                    ,"type":"number"
+                    ,"format":"double"
                 }
                 ,"index":
                 {
                     "required":true
                     ,"description":"Index of the page in combined document starting from 1"
-                    ,"type":"int"
+                    ,"type":"integer"
                 }
                 ,"rotation":
                 {
                     "required":true
                     ,"description":"Rotation angle of the page in clockwise direction in degree"
-                    ,"type":"double"
+                    ,"type":"number"
+                    ,"format":"double"
                 }
                 ,"width":
                 {
                     "required":true
                     ,"description":"Width of the page"
-                    ,"type":"double"
+                    ,"type":"number"
+                    ,"format":"double"
+                }
+            }
+        }
+        ,"DocumentUrl":
+        {
+            "id":"DocumentUrl"
+            ,"properties":
+            {
+                "url":
+                {
+                    "required":true
+                    ,"description":"Secure URL of the document"
+                    ,"type":"string"
                 }
             }
         }
@@ -6163,7 +7460,13 @@
                 {
                     "required":true
                     ,"description":"Number of pages in the document"
-                    ,"type":"int"
+                    ,"type":"integer"
+                }
+                ,"participantId":
+                {
+                    "required":true
+                    ,"description":"The unique identifier of the participant that uploaded the supporting document"
+                    ,"type":"string"
                 }
             }
         }
@@ -6229,7 +7532,7 @@
                 {
                     "required":true
                     ,"description":"Page number within the document."
-                    ,"type":"int"
+                    ,"type":"integer"
                 }
                 ,"url":
                 {
@@ -6500,25 +7803,6 @@
                 }
             }
         }
-        ,"MergefieldInfo":
-        {
-            "id":"MergefieldInfo"
-            ,"properties":
-            {
-                "defaultValue":
-                {
-                    "required":true
-                    ,"description":"The default value of the field"
-                    ,"type":"string"
-                }
-                ,"fieldName":
-                {
-                    "required":true
-                    ,"description":"The name of the field"
-                    ,"type":"string"
-                }
-            }
-        }
         ,"Note":
         {
             "id":"Note"
@@ -6719,7 +8003,7 @@
                 ,"securityOption":
                 {
                     "required":true
-                    ,"description":"Security options that apply to the participant. This cannot be changed as part of the PUT call"
+                    ,"description":"Security options that apply to the participant."
                     ,"type":"ParticipantSecurityOption"
                     ,"items":
                     {
@@ -6735,7 +8019,7 @@
                 ,"status":
                 {
                     "required":false
-                    ,"description":"The status of the participant. This cannot be changed as part of the PUT call."
+                    ,"description":"The status of the participant. This cannot be changed as part of the PUT call. New participants will be ignored if added with a REPLACED status."
                     ,"type":"string"
                     ,"enum":["REPLACED","ACTIVE"]
                 }
@@ -6822,6 +8106,23 @@
                 }
             }
         }
+        ,"RemindersResponse":
+        {
+            "id":"RemindersResponse"
+            ,"properties":
+            {
+                "reminderInfoList":
+                {
+                    "required":true
+                    ,"description":"A list of one or more reminders created on the agreement specified by the unique identifier agreementId by the user invoking the API."
+                    ,"type":"array"
+                    ,"items":
+                    {
+                        "$ref":"ReminderInfo"
+                    }
+                }
+            }
+        }
         ,"SigningUrlResponse":
         {
             "id":"SigningUrlResponse"
@@ -6878,23 +8179,6 @@
                     "required":true
                     ,"description":"The email address of the signer associated with this signing url"
                     ,"type":"string"
-                }
-            }
-        }
-        ,"RemindersResponse":
-        {
-            "id":"RemindersResponse"
-            ,"properties":
-            {
-                "reminderInfoList":
-                {
-                    "required":true
-                    ,"description":"A list of one or more reminders created on the agreement specified by the unique identifier agreementId by the user invoking the API."
-                    ,"type":"array"
-                    ,"items":
-                    {
-                        "$ref":"ReminderInfo"
-                    }
                 }
             }
         }

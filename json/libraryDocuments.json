@@ -5,7 +5,7 @@
     ,"basePath":"/api/rest/v6"
     ,"resourcePath":"/libraryDocuments"
     ,"produces":
-    ["application/json"
+    ["application/json","text/csv"
     ]
     ,"apis":
     [
@@ -19,7 +19,7 @@
                     ,"notes":null
                     ,"type":"LibraryDocumentCreationResponse"
                     ,"nickname":"createLibraryDocument"
-                    ,"order":102
+                    ,"order":109
                     ,"produces":
                     ["application/json"
                     ]
@@ -59,7 +59,7 @@
                             "name":"LibraryDocumentInfo"
                             ,"description":"Information about the library document that you want to create."
                             ,"required":true
-                            ,"type":"LibraryDocumentInfo"
+                            ,"type":"LibraryDocumentCreationInfoV6"
                             ,"paramType":"body"
                         }
                     ]
@@ -163,7 +163,7 @@
                     ,"notes":null
                     ,"type":"LibraryDocumentViewResponse"
                     ,"nickname":"createLibraryDocumentView"
-                    ,"order":103
+                    ,"order":110
                     ,"produces":
                     ["application/json"
                     ]
@@ -290,7 +290,7 @@
                     ,"notes":null
                     ,"type":"LibraryDocuments"
                     ,"nickname":"getLibraryDocuments"
-                    ,"order":104
+                    ,"order":111
                     ,"produces":
                     ["application/json"
                     ]
@@ -328,7 +328,7 @@
                         }
                         ,{
                             "name":"showHiddenLibraryDocuments"
-                            ,"description":"A query parameter to fetch all the hidden library documents along with the visible library documents."
+                            ,"description":"A query parameter to fetch all the hidden library documents along with the visible library documents. Default value is false."
                             ,"required":false
                             ,"type":"boolean"
                             ,"paramType":"query"
@@ -342,7 +342,7 @@
                         }
                         ,{
                             "name":"pageSize"
-                            ,"description":"Number of intended items in the response page."
+                            ,"description":"Number of intended items in the response page. If not provided, it is decided by the application settings."
                             ,"required":false
                             ,"type":"integer"
                             ,"paramType":"query"
@@ -406,9 +406,9 @@
                     "httpMethod":"GET"
                     ,"summary":"Retrieves the details of a library document."
                     ,"notes":null
-                    ,"type":"LibraryDocumentInfo"
+                    ,"type":"LibraryDocumentCreationInfoV6"
                     ,"nickname":"getLibraryDocumentInfo"
-                    ,"order":105
+                    ,"order":112
                     ,"produces":
                     ["application/json"
                     ]
@@ -520,7 +520,7 @@
                     ,"type":"string"
                     ,"format":"byte"
                     ,"nickname":"getLibraryDocumentAuditTrail"
-                    ,"order":108
+                    ,"order":115
                     ,"produces":
                     ["application/pdf","application/pdf;encoding=base64"
                     ]
@@ -552,6 +552,13 @@
                         ,{
                             "name":"x-on-behalf-of-user"
                             ,"description":"The userId or email in the format <b>userid:{userId} OR email:{email}.<\/b> of the user that has shared his/her account"
+                            ,"required":false
+                            ,"type":"string"
+                            ,"paramType":"header"
+                        }
+                        ,{
+                            "name":"If-None-Match"
+                            ,"description":"Pass the value of the e-tag header obtained from the previous response to the same request to get a RESOURCE_NOT_MODIFIED(304) if the resource hasn't changed."
                             ,"required":false
                             ,"type":"string"
                             ,"paramType":"header"
@@ -621,7 +628,7 @@
                     ,"type":"string"
                     ,"format":"byte"
                     ,"nickname":"getCombinedDocument"
-                    ,"order":110
+                    ,"order":117
                     ,"produces":
                     ["application/pdf","application/pdf;encoding=base64"
                     ]
@@ -747,7 +754,7 @@
                     ,"notes":null
                     ,"type":"Documents"
                     ,"nickname":"getDocuments"
-                    ,"order":111
+                    ,"order":118
                     ,"produces":
                     ["application/json"
                     ]
@@ -874,7 +881,7 @@
                     ,"type":"string"
                     ,"format":"byte"
                     ,"nickname":"getLibraryDocument"
-                    ,"order":112
+                    ,"order":119
                     ,"produces":
                     ["application/pdf","application/pdf;encoding=base64"
                     ]
@@ -1000,7 +1007,7 @@
                     ,"notes":null
                     ,"type":"DocumentImageUrlsInfo"
                     ,"nickname":"getLibraryDocumentImageUrls"
-                    ,"order":114
+                    ,"order":121
                     ,"produces":
                     ["application/json"
                     ]
@@ -1150,6 +1157,122 @@
             ]
         }
         ,{
+            "path":"/libraryDocuments/{libraryDocumentId}/formData"
+            ,"operations":
+            [
+                {
+                    "httpMethod":"GET"
+                    ,"summary":"Retrieves data entered into the interactive form fields of the library document."
+                    ,"notes":"This API can only be called by the creator of the library document"
+                    ,"type":"string"
+                    ,"format":"byte"
+                    ,"nickname":"getFormData"
+                    ,"order":122
+                    ,"produces":
+                    ["text/csv"
+                    ]
+                    ,"authorizations":
+                    {
+                        "oauth2":
+                        [
+                            {
+                                "scope":"library_read"
+                            }
+                        ]
+                    }
+                    ,"parameters":
+                    [
+                        {
+                            "name":"Authorization"
+                            ,"description":"An <a href=\"#\" onclick=\"this.href=oauthDoc()\" oncontextmenu=\"this.href=oauthDoc()\" target=\"oauthDoc\">OAuth Access Token<\/a> with scopes:<ul><li style='list-style-type: square'><a href=\"#\" onclick=\"this.href=oauthDoc('library_read')\" oncontextmenu=\"this.href=oauthDoc('library_read')\" target=\"oauthDoc\">library_read<\/a><\/li><\/ul>in the format <b>'Bearer {accessToken}'."
+                            ,"required":true
+                            ,"type":"string"
+                            ,"paramType":"header"
+                        }
+                        ,{
+                            "name":"x-api-user"
+                            ,"description":"The userId or email of API caller using the account or group token in the format <b>userid:{userId} OR email:{email}.<\/b> If it is not specified, then the caller is inferred from the token."
+                            ,"required":false
+                            ,"type":"string"
+                            ,"paramType":"header"
+                        }
+                        ,{
+                            "name":"x-on-behalf-of-user"
+                            ,"description":"The userId or email in the format <b>userid:{userId} OR email:{email}.<\/b> of the user that has shared his/her account"
+                            ,"required":false
+                            ,"type":"string"
+                            ,"paramType":"header"
+                        }
+                        ,{
+                            "name":"If-None-Match"
+                            ,"description":"Pass the value of the e-tag header obtained from the previous response to the same request to get a RESOURCE_NOT_MODIFIED(304) if the resource hasn't changed."
+                            ,"required":false
+                            ,"type":"string"
+                            ,"paramType":"header"
+                        }
+                        ,{
+                            "name":"libraryDocumentId"
+                            ,"description":"The document identifier, as retrieved from the API to fetch library documents."
+                            ,"required":true
+                            ,"type":"string"
+                            ,"paramType":"path"
+                        }
+                    ]
+                    ,"errorResponses":
+                    [
+                        {
+                            "code":"304"
+                            ,"reason":"RESOURCE_NOT_MODIFIED: Resource is not modified."
+                        }
+                        ,{
+                            "code":"400"
+                            ,"reason":"INVALID_ON_BEHALF_OF_USER_HEADER: Value provided in x-on-behalf-Of-user header is in invalid format."
+                        }
+                        ,{
+                            "code":"400"
+                            ,"reason":"INVALID_X_API_USER_HEADER: Value provided in x-api-user header is in invalid format."
+                        }
+                        ,{
+                            "code":"401"
+                            ,"reason":"INVALID_ACCESS_TOKEN: Access token provided is invalid or has expired."
+                        }
+                        ,{
+                            "code":"401"
+                            ,"reason":"INVALID_ON_BEHALF_OF_USER: Invalid user ID or email provided in x-on-behalf-of-user header."
+                        }
+                        ,{
+                            "code":"401"
+                            ,"reason":"INVALID_USER: Invalid user ID or email provided in x-user header."
+                        }
+                        ,{
+                            "code":"401"
+                            ,"reason":"NO_AUTHORIZATION_HEADER: Authorization header not provided."
+                        }
+                        ,{
+                            "code":"403"
+                            ,"reason":"API_TERMS_NOT_ACCEPTED: Your account is locked because an administrator has not agreed to Adobe Sign's Terms of Use. Please contact your account administrator to activate your account."
+                        }
+                        ,{
+                            "code":"403"
+                            ,"reason":"PERMISSION_DENIED: The API caller does not have the permission to execute this operation."
+                        }
+                        ,{
+                            "code":"404"
+                            ,"reason":"INVALID_LIBRARYDOCUMENT_ID: The Library Document ID specified is invalid."
+                        }
+                        ,{
+                            "code":"404"
+                            ,"reason":"NO_FORM_DATA: There is no form data available."
+                        }
+                        ,{
+                            "code":"500"
+                            ,"reason":"MISC_SERVER_ERROR: Some miscellaneous error has occurred."
+                        }
+                    ]
+                }
+            ]
+        }
+        ,{
             "path":"/libraryDocuments/{libraryDocumentId}/events"
             ,"operations":
             [
@@ -1159,7 +1282,7 @@
                     ,"notes":null
                     ,"type":"LibraryDocumentEventList"
                     ,"nickname":"getEvents"
-                    ,"order":183
+                    ,"order":196
                     ,"produces":
                     ["application/json"
                     ]
@@ -1270,7 +1393,7 @@
                     ,"notes":null
                     ,"type":"Note"
                     ,"nickname":"getLibraryDocumentNoteForApiUser"
-                    ,"order":184
+                    ,"order":197
                     ,"produces":
                     ["application/json"
                     ]
@@ -1361,6 +1484,113 @@
             ]
         }
         ,{
+            "path":"/libraryDocuments/{libraryDocumentId}/me/note"
+            ,"operations":
+            [
+                {
+                    "httpMethod":"PUT"
+                    ,"summary":"Updates the latest note of a library document for the API user."
+                    ,"notes":null
+                    ,"type":"void"
+                    ,"nickname":"updateLibraryDocumentNoteForApiUser"
+                    ,"order":198
+                    ,"produces":
+                    ["application/json"
+                    ]
+                    ,"authorizations":
+                    {
+                        "oauth2":
+                        [
+                            {
+                                "scope":"library_write"
+                            }
+                        ]
+                    }
+                    ,"parameters":
+                    [
+                        {
+                            "name":"Authorization"
+                            ,"description":"An <a href=\"#\" onclick=\"this.href=oauthDoc()\" oncontextmenu=\"this.href=oauthDoc()\" target=\"oauthDoc\">OAuth Access Token<\/a> with scopes:<ul><li style='list-style-type: square'><a href=\"#\" onclick=\"this.href=oauthDoc('library_write')\" oncontextmenu=\"this.href=oauthDoc('library_write')\" target=\"oauthDoc\">library_write<\/a><\/li><\/ul>in the format <b>'Bearer {accessToken}'."
+                            ,"required":true
+                            ,"type":"string"
+                            ,"paramType":"header"
+                        }
+                        ,{
+                            "name":"x-api-user"
+                            ,"description":"The userId or email of API caller using the account or group token in the format <b>userid:{userId} OR email:{email}.<\/b> If it is not specified, then the caller is inferred from the token."
+                            ,"required":false
+                            ,"type":"string"
+                            ,"paramType":"header"
+                        }
+                        ,{
+                            "name":"x-on-behalf-of-user"
+                            ,"description":"The userId or email in the format <b>userid:{userId} OR email:{email}.<\/b> of the user that has shared his/her account"
+                            ,"required":false
+                            ,"type":"string"
+                            ,"paramType":"header"
+                        }
+                        ,{
+                            "name":"libraryDocumentId"
+                            ,"description":"The document identifier, as retrieved from the API to fetch library documents."
+                            ,"required":true
+                            ,"type":"string"
+                            ,"paramType":"path"
+                        }
+                        ,{
+                            "name":"Note"
+                            ,"description":"The note to be associated with the library document."
+                            ,"required":true
+                            ,"type":"Note"
+                            ,"paramType":"body"
+                        }
+                    ]
+                    ,"errorResponses":
+                    [
+                        {
+                            "code":"400"
+                            ,"reason":"INVALID_ON_BEHALF_OF_USER_HEADER: Value provided in x-on-behalf-Of-user header is in invalid format."
+                        }
+                        ,{
+                            "code":"400"
+                            ,"reason":"INVALID_X_API_USER_HEADER: Value provided in x-api-user header is in invalid format."
+                        }
+                        ,{
+                            "code":"401"
+                            ,"reason":"INVALID_ACCESS_TOKEN: Access token provided is invalid or has expired."
+                        }
+                        ,{
+                            "code":"401"
+                            ,"reason":"INVALID_ON_BEHALF_OF_USER: Invalid user ID or email provided in x-on-behalf-of-user header."
+                        }
+                        ,{
+                            "code":"401"
+                            ,"reason":"INVALID_USER: Invalid user ID or email provided in x-user header."
+                        }
+                        ,{
+                            "code":"401"
+                            ,"reason":"NO_AUTHORIZATION_HEADER: Authorization header not provided."
+                        }
+                        ,{
+                            "code":"403"
+                            ,"reason":"API_TERMS_NOT_ACCEPTED: Your account is locked because an administrator has not agreed to Adobe Sign's Terms of Use. Please contact your account administrator to activate your account."
+                        }
+                        ,{
+                            "code":"403"
+                            ,"reason":"PERMISSION_DENIED: The API caller does not have the permission to execute this operation."
+                        }
+                        ,{
+                            "code":"404"
+                            ,"reason":"INVALID_LIBRARYDOCUMENT_ID: The Library Document ID specified is invalid."
+                        }
+                        ,{
+                            "code":"500"
+                            ,"reason":"MISC_SERVER_ERROR: Some miscellaneous error has occurred."
+                        }
+                    ]
+                }
+            ]
+        }
+        ,{
             "path":"/libraryDocuments/{libraryDocumentId}"
             ,"operations":
             [
@@ -1370,7 +1600,7 @@
                     ,"notes":"Currently status, name, sharingMode and templateTypes of the library document can only be updated."
                     ,"type":"void"
                     ,"nickname":"updateLibraryDocument"
-                    ,"order":187
+                    ,"order":201
                     ,"authorizations":
                     {
                         "oauth2":
@@ -1501,7 +1731,7 @@
                     ,"notes":null
                     ,"type":"void"
                     ,"nickname":"updateLibraryDocumentVisibility"
-                    ,"order":188
+                    ,"order":202
                     ,"authorizations":
                     {
                         "oauth2":
@@ -1621,7 +1851,7 @@
                     ,"notes":"Currently state can be changed from AUTHORING to ACTIVE."
                     ,"type":"void"
                     ,"nickname":"updateLibraryDocumentState"
-                    ,"order":189
+                    ,"order":203
                     ,"authorizations":
                     {
                         "oauth2":
@@ -1741,7 +1971,7 @@
     ]
     ,"models":
     {
-        "LibraryDocumentInfo":
+        "LibraryDocumentCreationInfoV6":
         {
             "id":"LibraryDocumentInfo"
             ,"properties":
@@ -1749,14 +1979,20 @@
                 "createdDate":
                 {
                     "required":false
-                    ,"description":"Date when library document was created. Format would be yyyy-MM-dd'T'HH:mm:ssZ. For example, e.g 2016-02-25T18:46:19Z represents UTC time"
+                    ,"description":"Date when library document was created. It will be ignored in POST/PUT requests. Format would be yyyy-MM-dd'T'HH:mm:ssZ. For example, e.g 2016-02-25T18:46:19Z represents UTC time"
                     ,"type":"string"
                     ,"format":"date"
                 }
                 ,"creatorEmail":
                 {
                     "required":false
-                    ,"description":"Email address of the library document creator. It will be ignored in POST call"
+                    ,"description":"Email address of the library document creator. It will be ignored in POST/PUT requests"
+                    ,"type":"string"
+                }
+                ,"creatorName":
+                {
+                    "required":false
+                    ,"description":"Name of the library document creator.  It will be ignored in POST/PUT requests"
                     ,"type":"string"
                 }
                 ,"fileInfos":
@@ -1772,8 +2008,15 @@
                 ,"id":
                 {
                     "required":false
-                    ,"description":"The unique identifier that is used to refer to the library template. It will be ignored in POST call"
+                    ,"description":"The unique identifier that is used to refer to the library template. It will be ignored in POST requests"
                     ,"type":"string"
+                }
+                ,"modifiedDate":
+                {
+                    "required":false
+                    ,"description":"Date when library document was last modified. It will be ignored in POST/PUT requests. Format would be yyyy-MM-dd'T'HH:mm:ssZ. For example, e.g 2016-02-25T18:46:19Z represents UTC time"
+                    ,"type":"string"
+                    ,"format":"date"
                 }
                 ,"name":
                 {
@@ -1784,7 +2027,7 @@
                 ,"sharingMode":
                 {
                     "required":true
-                    ,"description":"Specifies who should have access to this library document. GLOBAL sharing mode is not applicable in POST/PUT calls"
+                    ,"description":"Specifies who should have access to this library document. GLOBAL sharing mode is not applicable in POST/PUT requests"
                     ,"type":"string"
                     ,"enum":["USER","GROUP","ACCOUNT","GLOBAL"]
                 }
@@ -1820,13 +2063,7 @@
             "id":"FileInfo"
             ,"properties":
             {
-                "label":
-                {
-                    "required":false
-                    ,"description":"The unique label value of a file info element. In case of custom workflow this will map a file to corresponding file element in workflow definition. This must be specified in case of custom workflow agreement creation request "
-                    ,"type":"string"
-                }
-                ,"transientDocumentId":
+                "transientDocumentId":
                 {
                     "required":false
                     ,"description":"ID for a transient document that will be added to the library document"
@@ -1907,6 +2144,16 @@
                     ,"type":"string"
                     ,"enum":["EDIT","DOCUMENT","MANAGE","SEND","ALL"]
                 }
+                ,"sendViewConfiguration":
+                {
+                    "required":false
+                    ,"description":"Send page view configuration. This will be ignored for views other than SEND."
+                    ,"type":"SendViewConfiguration"
+                    ,"items":
+                    {
+                        "$ref":"SendViewConfiguration"
+                    }
+                }
             }
         }
         ,"CommonViewConfiguration":
@@ -1930,6 +2177,60 @@
                 {
                     "required":false
                     ,"description":"No Chrome Flag. If true, the embedded page is shown without a navigation header or footer. If false, the standard page header and footer will be present. By default its value is false"
+                    ,"type":"boolean"
+                }
+            }
+        }
+        ,"SendViewConfiguration":
+        {
+            "id":"SendViewConfiguration"
+            ,"properties":
+            {
+                "agrName":
+                {
+                    "required":true
+                    ,"description":"The agreement name for the library document on the compose page"
+                    ,"type":"string"
+                }
+                ,"fileUploadOptions":
+                {
+                    "required":false
+                    ,"description":"Controls various file upload options available on the compose page"
+                    ,"type":"FileUploadOptions"
+                    ,"items":
+                    {
+                        "$ref":"FileUploadOptions"
+                    }
+                }
+                ,"isPreviewSelected":
+                {
+                    "required":false
+                    ,"description":"Should the compose page be provided with authoring mode selected?"
+                    ,"type":"boolean"
+                }
+            }
+        }
+        ,"FileUploadOptions":
+        {
+            "id":"FileUploadOptions"
+            ,"properties":
+            {
+                "libraryDocument":
+                {
+                    "required":false
+                    ,"description":"Whether library documents link should appear or not. Default value is taken as true"
+                    ,"type":"boolean"
+                }
+                ,"localFile":
+                {
+                    "required":false
+                    ,"description":"Whether local file upload button should appear or not. Default value is taken as true"
+                    ,"type":"boolean"
+                }
+                ,"webConnectors":
+                {
+                    "required":false
+                    ,"description":"Whether link to attach documents from web sources like Dropbox should appear or not. Default value is taken as true"
                     ,"type":"boolean"
                 }
             }
@@ -1975,6 +2276,14 @@
                     ,"description":"True if this view is the current view"
                     ,"type":"boolean"
                 }
+                ,"name":
+                {
+                    "required":true
+                    ,"description":"Name of the requested libraryDocument view"
+                    ,"showInSampleRequest":true
+                    ,"type":"string"
+                    ,"enum":["EDIT","DOCUMENT","MANAGE","SEND","ALL"]
+                }
                 ,"url":
                 {
                     "required":false
@@ -2018,7 +2327,7 @@
                 "creatorEmail":
                 {
                     "required":false
-                    ,"description":"Email address of the library document creator. It will be ignored in POST call"
+                    ,"description":"Email address of the library document creator. It will be ignored in POST/PUT requests"
                     ,"type":"string"
                 }
                 ,"id":
@@ -2049,7 +2358,7 @@
                 ,"sharingMode":
                 {
                     "required":true
-                    ,"description":"Specifies who should have access to this library document. GLOBAL sharing mode is not applicable in POST/PUT calls"
+                    ,"description":"Specifies who should have access to this library document. GLOBAL sharing mode is not applicable in POST/PUT requests"
                     ,"type":"string"
                     ,"enum":["USER","GROUP","ACCOUNT","GLOBAL"]
                 }
@@ -2202,7 +2511,7 @@
                 {
                     "required":true
                     ,"description":"Page number within the document."
-                    ,"type":"int"
+                    ,"type":"integer"
                 }
                 ,"url":
                 {
@@ -2415,6 +2724,93 @@
                     "required":true
                     ,"description":"Content of Note field"
                     ,"type":"string"
+                }
+            }
+        }
+        ,"LibraryDocumentInfo":
+        {
+            "id":"LibraryDocumentInfo"
+            ,"properties":
+            {
+                "createdDate":
+                {
+                    "required":false
+                    ,"description":"Date when library document was created. It will be ignored in POST/PUT requests. Format would be yyyy-MM-dd'T'HH:mm:ssZ. For example, e.g 2016-02-25T18:46:19Z represents UTC time"
+                    ,"type":"string"
+                    ,"format":"date"
+                }
+                ,"creatorEmail":
+                {
+                    "required":false
+                    ,"description":"Email address of the library document creator. It will be ignored in POST/PUT requests"
+                    ,"type":"string"
+                }
+                ,"creatorName":
+                {
+                    "required":false
+                    ,"description":"Name of the library document creator.  It will be ignored in POST/PUT requests"
+                    ,"type":"string"
+                }
+                ,"fileInfos":
+                {
+                    "required":true
+                    ,"description":"A list of one or more files (or references to files) that will be used to create the template. If more than one file is provided, they will be combined into one PDF. Note: Only a single parameter in every FileInfo object must be specified"
+                    ,"type":"array"
+                    ,"items":
+                    {
+                        "$ref":"FileInfo"
+                    }
+                }
+                ,"id":
+                {
+                    "required":false
+                    ,"description":"The unique identifier that is used to refer to the library template. It will be ignored in POST requests"
+                    ,"type":"string"
+                }
+                ,"modifiedDate":
+                {
+                    "required":false
+                    ,"description":"Date when library document was last modified. It will be ignored in POST/PUT requests. Format would be yyyy-MM-dd'T'HH:mm:ssZ. For example, e.g 2016-02-25T18:46:19Z represents UTC time"
+                    ,"type":"string"
+                    ,"format":"date"
+                }
+                ,"name":
+                {
+                    "required":true
+                    ,"description":"The name of the library template that will be used to identify it, in emails and on the website"
+                    ,"type":"string"
+                }
+                ,"sharingMode":
+                {
+                    "required":true
+                    ,"description":"Specifies who should have access to this library document. GLOBAL sharing mode is not applicable in POST/PUT requests"
+                    ,"type":"string"
+                    ,"enum":["USER","GROUP","ACCOUNT","GLOBAL"]
+                }
+                ,"state":
+                {
+                    "required":false
+                    ,"description":"State of the library document."
+                    ,"type":"string"
+                    ,"enum":["AUTHORING","ACTIVE"]
+                }
+                ,"status":
+                {
+                    "required":true
+                    ,"description":"Status of the library document"
+                    ,"type":"string"
+                    ,"enum":["AUTHORING","ACTIVE","REMOVED"]
+                }
+                ,"templateTypes":
+                {
+                    "required":true
+                    ,"description":"A list of one or more library template types"
+                    ,"type":"array"
+                    ,"items":
+                    {
+                        "type":"string"
+                        ,"enum":["DOCUMENT","FORM_FIELD_LAYER"]
+                    }
                 }
             }
         }

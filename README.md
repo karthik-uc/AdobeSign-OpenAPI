@@ -1,17 +1,25 @@
 # Adobe Sign SDK
 
 # Overview
-Adobe Sign SDK aims at providing an easy way to integrate the Adobe Sign RESTful web service into client applications through easy to consume client side objects wrapping the REST API functionality. This repository contains JSONs and steps that could be used to generate Adobe Sign’s SDK for V6 REST APIs in various languages(Java).
+Adobe Sign SDK aims at providing an easy way to integrate the Adobe Sign RESTful web service into client applications through easy to consume client side objects wrapping the REST API functionality. This repository contains JSONs and steps that could be used to generate Adobe Sign’s SDK for V6 REST APIs in various languages(Java, CSharp , NodeJS) .
 
 # Table of contents
 
-  - [Adobe Sign API Java SDK](#adobe-sign-sdk)  
+  - [Adobe Sign API SDK](#adobe-sign-sdk)  
   - [Overview](#overview)
   - [Table of contents](#table-of-contents)  
   - [Prerequisites](#prerequisites)  
   - [Getting Started](#getting-started)  
   - [Downloading and Building the SDK](#downloading-and-building-the-sdk)  
-  - [APIs](#apis)    
+  - [Java SDK](#java-sdk)
+  - [APIs](#apis)  
+  - [Models](#models)
+  - [CSharp SDK](#csharp-sdk)
+  - [APIs](#apis)  
+  - [Models](#models)
+  - [NodeJs SDK](#nodejs-sdk)
+  - [APIs](#apis)  
+  - [Models](#models)
   - [Report Issues/Bugs](#report-issuesbugs)    
 
 Prerequisites
@@ -47,34 +55,36 @@ You can also sync the git repo on your local machine.
 
 3.  Download the json folder from the GitHub (https://git.corp.adobe.com/srustagi/REST-SDK-V6) and copy it under root folder `swagger-codegen-2.3.1`
 
-## Java SDK
-
-1.  To generate SDK classes for Agreement Resource at output folder (/var/tmp/AdobeSignJavaSdk) using agreements.json, run following command in root directory :
+Java SDK
+=========
+1.  To generate SDK classes for Agreement Resource at output folder (<PATH_TO_OUTPUT_FOLDER>) using agreements.json, run following command in root directory :
     ```sh
     java -jar modules/swagger-codegen-cli/target/swagger-codegen-cli.jar generate \
     -i json/agreements.json \
-    -l java \
-    -o /var/tmp/AdobeSignJavaSdk \
+    -l java \-o <PATH_TO_OUTPUT_FOLDER> \
+    --model-package io.swagger.client.model.agreements 
     -DdateLibrary=legacy \
-    --http-user-agent=AdobeSign_JavaSdk_1_0
+    --http-user-agent=AdobeSign_JavaSdk_2_0
     ``` 
-    (if you're on Windows, replace the last command with `java -jar modules\swagger-codegen-cli\target\swagger-codegen-cli.jar generate -i json\agreements.json -l java -o c:\temp\AdobeSignJavaSdk -DdateLibrary=legacy --http-user-agent=AdobeSign_JavaSdk_1_0`)
+    (if you're on Windows, replace the last command with `java -jar modules\swagger-codegen-cli\target\swagger-codegen-cli.jar generate -i json\agreements.json -l java -o <PATH_TO_OUTPUT_FOLDER> \ --model-package io.swagger.client.model.agreements -DdateLibrary=legacy --http-user-agent=AdobeSign_JavaSdk_2_0`)
 
-2.  Similarly, in order to generate SDK for other resources, replace agreements.json in previous command with JSON file of corresponding resource.
+2.  Similarly, in order to generate SDK for other resources, replace agreements.json in previous command with JSON file of corresponding resource & model-package with io.swagger.client.model.<RESOURCE_NAME>  .
     
-3.  If you want to compile all the SDK source classes, a single command can be used in output folder(/var/tmp/AdobeSignJavaSdk) :  
+3.  If you want to compile all the SDK source classes, a single command can be used in output folder(<OUTPUT_FOLDER>) :  
     ```sh
     gradle build
     ```
     
 4.  If you want the JAR file of the SDK, you can find it at the location : 
     ```sh
-    AdobeSignJavaSdk/build/libs/swagger-java-client-{project-version}.jar
+    <OUTPUT_FOLDER>/build/libs/swagger-java-client-{project-version}.jar
     ```
     
-APIs
-====================
-The `AdobeSignJavaSdk/src/main/java/io/swagger/client` folder contains all the Adobe Sign APIs. 
+
+
+##### APIs
+
+The `<PATH_TO_OUTPUT_FOLDER>/src/main/java/io/swagger/client/api` folder contains all the Adobe Sign APIs. 
 
 Packages containing APIs are laid out as follows:  
 
@@ -82,9 +92,133 @@ Packages containing APIs are laid out as follows:
 Each class represents a resource and the class methods refers to the operations that can be performed on that resource. Each such operation is called API.   
 e.g. `AgreementsAPI.java` contains `getAgreements` method which retrieves all the agreements for the user.  
 
-**io.swagger.client.model**    
+
+##### Models
+
+The `<PATH_TO_OUTPUT_FOLDER>/src/main/java/io/swagger/client/model/<RESOURCE_NAME>` folder contains all the Adobe Sign models coressponding to resource. 
+
+**io.swagger.client.model.<RESOURCE_NAME>**    
 Each class represents request or response class required in the API calls.  
-The classes are not resource specific and can be found under this folders for all the resources. 
+The classes are  resource specific and can be found under this folders for the resource specified. 
+
+
+CSharp SDK
+=========
+1.  To generate SDK classes for Agreement Resource at output folder (<PATH_TO_OUTPUT_FOLDER>) using agreements.json, run following command in root directory :
+    ```sh
+    java -jar modules/swagger-codegen-cli/target/swagger-codegen-cli.jar generate \
+    -i json/agreements.json \
+    -l csharp \-o <PATH_TO_OUTPUT_FOLDER> \
+    --model-package model/agreements 
+    -DdateLibrary=legacy \
+    --http-user-agent=AdobeSign_CSharpSdk_2_0
+    ``` 
+    (if you're on Windows, replace the last command with `java -jar modules\swagger-codegen-cli\target\swagger-codegen-cli.jar generate -i json\agreements.json -l csharp -o <PATH_TO_OUTPUT_FOLDER> \ --model-package model/agreementss -DdateLibrary=legacy --http-user-agent=AdobeSign_CSharpSdk_2_0`)
+
+2.  Similarly, in order to generate SDK for other resources, replace agreements.json in previous command with JSON file of corresponding resource & model-package with io.swagger.client.model.<RESOURCE_NAME>  .
+    
+3.  If you want to compile all the SDK source classes, a single command can be used in output folder to generate the DLL (<OUTPUT_FOLDER>) :  
+   
+- [Mac/Linux] `/bin/sh build.sh`
+- [Windows] `build.bat`
+    
+4.  If you want the JAR file of the SDK, you can find it at the location : 
+    ```sh
+    <OUTPUT_FOLDER>/bin/IO.Swagger.dll
+    ```
+    
+
+
+##### APIs
+
+The `<PATH_TO_OUTPUT_FOLDER>/src/IO.Swagger/Api` folder contains all the Adobe Sign APIs. 
+
+Namespaces containing APIs are laid out as follows:  
+
+**IO.Swagger.Api**    
+Each class represents a resource and the class methods refers to the operations that can be performed on that resource. Each such operation is called API.   
+e.g. `AgreementsAPI.cs` contains `getAgreements` method which retrieves all the agreements for the user.  
+
+
+##### Models
+
+The `<PATH_TO_OUTPUT_FOLDER>/src/IO.Swagger/model.<RESOURCE_NAME>` folder contains all the Adobe Sign models coressponding to resource. 
+
+**IO.Swagger.model.<RESOURCE_NAME>**    
+Each class represents request or response class required in the API calls.  
+The classes are  resource specific and can be found under this folders for the resource specified. 
+
+NodeJs SDK
+=========
+1.  To generate SDK classes for Agreement Resource at output folder (<PATH_TO_OUTPUT_FOLDER>) using agreements.json, run following command in root directory :
+    ```sh
+    java -jar modules/swagger-codegen-cli/target/swagger-codegen-cli.jar generate \
+    -i json/agreements.json \
+    -l javascript \-o <PATH_TO_OUTPUT_FOLDER> \
+    --model-package model/agreements 
+    -DdateLibrary=legacy \
+    --http-user-agent=AdobeSign_NodeJsSDK_2_0
+    -DusePromises=true
+    ``` 
+    (if you're on Windows, replace the last command with `java -jar modules\swagger-codegen-cli\target\swagger-codegen-cli.jar generate -i json\agreements.json -l javascript -o <PATH_TO_OUTPUT_FOLDER> \ --model-package model/agreementss -DdateLibrary=legacy --http-user-agent=AdobeSign_NodeJsSDK_2_0 -DusePromises=true`)
+
+2.  Similarly, in order to generate SDK for other resources, replace agreements.json in previous command with JSON file of corresponding resource & model-package with io.swagger.client.model.<RESOURCE_NAME>  .
+
+3.  Replace the <OUTPUT_FOLDER>/src/index.js file with the provided index.js .
+    
+4.  To publish the library as a [npm](https://www.npmjs.com/),
+please follow the procedure in ["Publishing npm packages"](https://docs.npmjs.com/getting-started/publishing-npm-packages).
+
+Then install it via:
+
+```shell
+npm install swagger-js-client --save
+```
+
+##### Local development
+
+To use the library locally without publishing to a remote npm registry, first install the dependencies by changing 
+into the directory containing `package.json` and this README (i.e. OUTPUT_FOLDER).  Then run:
+
+```shell
+npm install
+```
+
+Next, [link](https://docs.npmjs.com/cli/link) it globally in npm with the following, also from `OUTPUT_FOLDER`:
+
+```shell
+npm link
+```
+
+Finally, switch to the directory you want to use your swagger-js-client from, and run:
+
+```shell
+npm link /path/to/<OUTPUT_FOLDER>
+```
+
+You should now be able to `require('swagger-js-client')` in javascript files from the directory you ran the last 
+command above from.
+    
+
+
+##### APIs
+
+The `<OUTPUT_FOLDER>/src/api` folder contains all the Adobe Sign APIs. 
+
+Namespaces containing APIs are laid out as follows:  
+
+**<OUTPUT_FOLDER>/src/api**    
+Each class represents a resource and the class methods refers to the operations that can be performed on that resource. Each such operation is called API.   
+e.g. `AgreementsAPI.js` contains `getAgreements` method which retrieves all the agreements for the user.  
+
+
+##### Models
+
+The `<OUTPUT_FOLDER>/src/model/<RESOURCE_NAME>` folder contains all the Adobe Sign models coressponding to resource. 
+
+**<OUTPUT_FOLDER>/src/<RESOURCE_NAME>**    
+Each class represents request or response class required in the API calls.  
+The classes are  resource specific and can be found under this folders for the resource specified. 
 
 Report Issues/Bugs
 ====================
